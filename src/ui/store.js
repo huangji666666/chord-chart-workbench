@@ -59,9 +59,12 @@ import { cloneSong, createBlankSong, validateSongShape, migrateSong } from '../c
 import { emptyOrganization, validateOrganization } from '../core/organization.js';
 import { duplicateSong } from '../core/edit.js';
 import { createId } from '../core/ids.js';
+import { createLiveDemo } from '../data/live-song.js';
 
 /** 自动保存的合并窗口：连点几下按钮只写一次盘。 */
 const SAVE_DEBOUNCE_MS = 200;
+const SAMPLE_MIGRATION_KEY = 'chord-chart-workbench/v1/sample-migration';
+const BUILT_IN_DEMO_TITLES = new Set(['候鸟信', '把日子唱成歌']);
 
 /** 允许的界面模式。 */
 export const MODES = Object.freeze(['edit', 'preview', 'present']);
@@ -114,11 +117,39 @@ export function createStore(options = {}) {
     return currentSong(state.history);
   }
 
-  /** 首次使用与损坏兜底从真正的空白草稿开始。 */
+  /** 首次使用保留一个空白写谱入口，同时给用户一首可直接试听的示例。 */
   function seedLibrary() {
-    const song = createBlankSong();
-    const library = setActiveSongId(upsertSong(createEmptyLibrary(), song), song.id).library;
-    return library;
+    const demo = createLiveDemo();
+    const blank = createBlankSong();
+    let library = createEmptyLibrary();
+    library = upsertSong(library, demo);
+    library = upsertSong(library, blank);
+    return setActiveSongId(library, blank.id).library;
+  }
+
+  /**
+   * 把本版本之前内置的演示曲移入回收站，并只补一首新的《小星星》示例。
+   * 只按已知内置 ID/标题匹配，避免误删用户自己的歌曲；标记写在独立键里，
+   * 所以用户删除示例后刷新不会再次自动塞回来。
+   */
+  function migrateBuiltInDemos(library) {
+    const migrated = storage?.getItem?.(SAMPLE_MIGRATION_KEY) === 'v2';
+    if (migrated) return { library, changed: false };
+
+    const removed = library.songs.filter((song) => song.id === 'sng_sample0001' || BUILT_IN_DEMO_TITLES.has(song.title));
+    const songs = library.songs.filter((song) => !removed.includes(song));
+    const organization = structuredClone(library.organization ?? emptyOrganization());
+    for (const song of removed) {
+      if (!organization.trash.some((item) => item.song.id === song.id)) {
+        organization.trash.push({ song: cloneSong(song), deletedAt: new Date().toISOString() });
+      }
+    }
+
+    const hasNewDemo = songs.some((song) => song.title === '小星星（爵士前奏练习）');
+    if (!hasNewDemo) songs.push(createLiveDemo());
+    const activeSongId = songs.some((song) => song.id === library.activeSongId) ? library.activeSongId : songs[0]?.id ?? null;
+    storage?.setItem?.(SAMPLE_MIGRATION_KEY, 'v2');
+    return { library: { ...library, songs, activeSongId, organization, updatedAt: new Date().toISOString() }, changed: true };
   }
 
   /** 把曲库里的活跃歌曲换成 `song`（按 ID 覆盖），并选它。 */
@@ -188,6 +219,10 @@ export function createStore(options = {}) {
     if (library.songs.length === 0) {
       library = seedLibrary();
       seeded = true;
+    } else {
+      const migrated = migrateBuiltInDemos(library);
+      library = migrated.library;
+      seeded = migrated.changed;
     }
     state.library = library;
     state.repairWarning = loaded.needsRepair ? loaded.warnings.join('\n') : null;
@@ -477,6 +512,7 @@ export function createStore(options = {}) {
       state.textDraft = null;
       setSaveStatus('saved');
       flushSave();
+      storage?.setItem?.(SAMPLE_MIGRATION_KEY, 'v2');
       emit('song-switch');
       return { ok: true };
     },

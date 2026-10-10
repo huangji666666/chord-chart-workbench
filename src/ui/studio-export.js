@@ -177,8 +177,9 @@ function pageThumb(canvas) {
 }
 
 /** Open the compact export sheet used by the top-right action and More menu. */
-export async function openScoreExport(ctx) {
+export async function openScoreExport(ctx, options = {}) {
   const song = ctx.store.getSong();
+  const autoFormat = options.format === 'pdf' || options.format === 'png' ? options.format : null;
   const issues = collectDurationIssues(song);
   const status = el('p', { class: 'notice', text: '正在生成 A4 预览…' });
   const body = el('div', { class: 'score-export-panel' }, [status]);
@@ -215,6 +216,9 @@ export async function openScoreExport(ctx) {
         handle.close(null); toast(`已保存 ${pages.length} 张 PNG`, { type: 'success' });
       } catch (error) { toast(`PNG 导出失败：${error.message}`, { type: 'error' }); }
     });
+    if (autoFormat) {
+      setTimeout(() => (autoFormat === 'pdf' ? runPdf : runPng).click(), 0);
+    }
   } catch (error) {
     status.className = 'field__error';
     status.textContent = `生成 A4 谱面失败：${error.message}`;
