@@ -64,7 +64,8 @@ import { createLiveDemo } from '../data/live-song.js';
 /** 自动保存的合并窗口：连点几下按钮只写一次盘。 */
 const SAVE_DEBOUNCE_MS = 200;
 const SAMPLE_MIGRATION_KEY = 'chord-chart-workbench/v1/sample-migration';
-const BUILT_IN_DEMO_TITLES = new Set(['候鸟信', '把日子唱成歌']);
+const SAMPLE_MIGRATION_VERSION = 'v3';
+const BUILT_IN_DEMO_TITLES = new Set(['候鸟信', '把日子唱成歌', '茶汤']);
 
 /** 允许的界面模式。 */
 export const MODES = Object.freeze(['edit', 'preview', 'present']);
@@ -133,7 +134,7 @@ export function createStore(options = {}) {
    * 所以用户删除示例后刷新不会再次自动塞回来。
    */
   function migrateBuiltInDemos(library) {
-    const migrated = storage?.getItem?.(SAMPLE_MIGRATION_KEY) === 'v2';
+    const migrated = storage?.getItem?.(SAMPLE_MIGRATION_KEY) === SAMPLE_MIGRATION_VERSION;
     if (migrated) return { library, changed: false };
 
     const removed = library.songs.filter((song) => song.id === 'sng_sample0001' || BUILT_IN_DEMO_TITLES.has(song.title));
@@ -148,7 +149,7 @@ export function createStore(options = {}) {
     const hasNewDemo = songs.some((song) => song.title === '小星星（爵士前奏练习）');
     if (!hasNewDemo) songs.push(createLiveDemo());
     const activeSongId = songs.some((song) => song.id === library.activeSongId) ? library.activeSongId : songs[0]?.id ?? null;
-    storage?.setItem?.(SAMPLE_MIGRATION_KEY, 'v2');
+    storage?.setItem?.(SAMPLE_MIGRATION_KEY, SAMPLE_MIGRATION_VERSION);
     return { library: { ...library, songs, activeSongId, organization, updatedAt: new Date().toISOString() }, changed: true };
   }
 
@@ -512,7 +513,7 @@ export function createStore(options = {}) {
       state.textDraft = null;
       setSaveStatus('saved');
       flushSave();
-      storage?.setItem?.(SAMPLE_MIGRATION_KEY, 'v2');
+      storage?.setItem?.(SAMPLE_MIGRATION_KEY, SAMPLE_MIGRATION_VERSION);
       emit('song-switch');
       return { ok: true };
     },
