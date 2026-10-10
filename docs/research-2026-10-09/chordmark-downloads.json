@@ -1,0 +1,26 @@
+[
+  {
+    "source": "https://raw.githubusercontent.com/no-chris/chord-mark/master/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\no-chris__chord-mark\\README.md",
+    "sha256": "1D0908923E557FBEB102EC6E7A2CAA58F6B4E5CF31F833F28B8B3A922BB4BAD8",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/no-chris/chord-mark/master/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\no-chris__chord-mark\\LICENSE",
+    "sha256": "3A4040EDC2F1114F03CD2459C101BCB2C61D990FE1C31B9B17A1116FC6B594F6",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/no-chris/chord-mark/master/packages/chord-mark/package.json",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\no-chris__chord-mark\\packages__chord-mark__package.json",
+    "sha256": "30FEBFB9C900BE42D1BE4381FB2CFE4FFC132C7AF29011F4CBFDFC37F1C22FB0",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/no-chris/chord-mark/master/packages/chord-mark-converters/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\no-chris__chord-mark\\packages__chord-mark-converters__README.md",
+    "sha256": "1EDEE0492C201B93CD2B9C8C10F5B7FD74DDA53C8AEC96C2033F7FCA9565EDAB",
+    "error": null
+  }
+]

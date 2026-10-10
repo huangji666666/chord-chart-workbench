@@ -1,0 +1,215 @@
+[
+  {
+    "repo": "martijnversluis/ChordSheetJS",
+    "url": "https://github.com/martijnversluis/ChordSheetJS",
+    "license": "GPL-2.0",
+    "branch": "master",
+    "archived": false,
+    "stars": 444,
+    "pushed_at": "2026-10-07T17:30:34Z",
+    "description": "A JavaScript library for parsing and formatting chords and chord sheets",
+    "error": null
+  },
+  {
+    "repo": "tonaljs/tonal",
+    "url": "https://github.com/tonaljs/tonal",
+    "license": null,
+    "branch": "main",
+    "archived": false,
+    "stars": 4252,
+    "pushed_at": "2026-09-29T07:56:35Z",
+    "description": "A music theory library for Javascript",
+    "error": null
+  },
+  {
+    "repo": "Tonejs/Tone.js",
+    "url": "https://github.com/Tonejs/Tone.js",
+    "license": "MIT",
+    "branch": "dev",
+    "archived": false,
+    "stars": 14755,
+    "pushed_at": "2026-10-04T20:15:08Z",
+    "description": "A Web Audio framework for making interactive music in the browser.",
+    "error": null
+  },
+  {
+    "repo": "yezhiyi9670/sparks-notation-1",
+    "url": "https://github.com/yezhiyi9670/sparks-notation-1",
+    "license": "Apache-2.0",
+    "branch": "main",
+    "archived": false,
+    "stars": 75,
+    "pushed_at": "2025-12-06T08:29:21Z",
+    "description": "Core, desktop application and website for Sparks NMN, a natural text format for composing numbered music notation scores.",
+    "error": null
+  },
+  {
+    "repo": "cs-cat/simple-notation",
+    "url": "https://github.com/cs-cat/simple-notation",
+    "license": "MIT",
+    "branch": "main",
+    "archived": false,
+    "stars": 0,
+    "pushed_at": "2025-07-23T08:02:14Z",
+    "description": "简谱渲染是一个基于TypeScript开发的简单音乐渲染库，可以让用户使用简单的文本配置来渲染简谱。",
+    "error": null
+  },
+  {
+    "repo": "flufy3d/JianpuRender",
+    "url": "https://github.com/flufy3d/JianpuRender",
+    "license": "Apache-2.0",
+    "branch": "main",
+    "archived": false,
+    "stars": 16,
+    "pushed_at": "2026-09-27T11:02:48Z",
+    "description": "A lightweight TypeScript library that renders Jianpu (numbered notation) from MusicXML or JSON to SVG/CANVAS. Features dynamic layout, interactivity, and real-time updates for web music apps.",
+    "error": null
+  },
+  {
+    "repo": "jachy-h/hh-jianpu",
+    "url": "https://github.com/jachy-h/hh-jianpu",
+    "license": null,
+    "branch": "main",
+    "archived": false,
+    "stars": 5,
+    "pushed_at": "2026-03-29T01:59:23Z",
+    "description": "哈哈简谱",
+    "error": null
+  },
+  {
+    "repo": "paulrosen/abcjs",
+    "url": "https://github.com/paulrosen/abcjs",
+    "license": "NOASSERTION",
+    "branch": "main",
+    "archived": false,
+    "stars": 2360,
+    "pushed_at": "2026-09-21T14:48:02Z",
+    "description": "javascript for rendering abc music notation",
+    "error": null
+  },
+  {
+    "repo": "opensheetmusicdisplay/opensheetmusicdisplay",
+    "url": "https://github.com/opensheetmusicdisplay/opensheetmusicdisplay",
+    "license": "BSD-3-Clause",
+    "branch": "develop",
+    "archived": false,
+    "stars": 1984,
+    "pushed_at": "2026-10-09T12:23:48Z",
+    "description": "OpenSheetMusicDisplay renders sheet music in MusicXML format in browsers and headless with NodeJS. Based on VexFlow, OSMD is brought to you by PhonicScore.com.",
+    "error": null
+  },
+  {
+    "repo": "CoderLine/alphaTab",
+    "url": "https://github.com/CoderLine/alphaTab",
+    "license": "NOASSERTION",
+    "branch": "develop",
+    "archived": false,
+    "stars": 1863,
+    "pushed_at": "2026-10-09T10:49:24Z",
+    "description": "alphaTab is a cross platform music notation and guitar tablature rendering library.",
+    "error": null
+  },
+  {
+    "repo": "0xfe/vexflow",
+    "url": "https://github.com/0xfe/vexflow",
+    "license": "NOASSERTION",
+    "branch": "master",
+    "archived": false,
+    "stars": 4394,
+    "pushed_at": "2025-03-05T22:49:21Z",
+    "description": "A JavaScript library for rendering music notation and guitar tablature.",
+    "error": null
+  },
+  {
+    "repo": "chordpro/chordpro",
+    "url": "https://github.com/ChordPro/chordpro",
+    "license": "NOASSERTION",
+    "branch": "master",
+    "archived": false,
+    "stars": 530,
+    "pushed_at": "2026-09-25T18:07:05Z",
+    "description": "Reference implementation of the ChordPro standard for musical lead sheets.",
+    "error": null
+  },
+  {
+    "repo": "maneckeb/open-setlist",
+    "url": "https://github.com/maneckeb/open-setlist",
+    "license": null,
+    "branch": "main",
+    "archived": false,
+    "stars": 0,
+    "pushed_at": "2026-06-02T21:21:14Z",
+    "description": "A setlist manager for musicians. Manage your songs, build setlists, and perform on stage — all from your browser.  Your data stays on your device. No account, no cloud, no subscription.",
+    "error": null
+  },
+  {
+    "repo": "rusahu/chordvault",
+    "url": "https://github.com/rusahu/chordvault",
+    "license": "NOASSERTION",
+    "branch": "main",
+    "archived": false,
+    "stars": 5,
+    "pushed_at": "2026-10-09T09:16:28Z",
+    "description": "A self-hosted chord sheet web app for musicians. Store, transpose, and perform your chord sheets from any device on your local network.",
+    "error": null
+  },
+  {
+    "repo": "chordproject/chordproject-client",
+    "error": "Response status code does not indicate success: 404 (Not Found)."
+  },
+  {
+    "repo": "parallax/jsPDF",
+    "url": "https://github.com/parallax/jsPDF",
+    "license": "MIT",
+    "branch": "master",
+    "archived": false,
+    "stars": 31312,
+    "pushed_at": "2026-09-30T20:48:08Z",
+    "description": "Client-side JavaScript PDF generation for everyone.",
+    "error": null
+  },
+  {
+    "repo": "yWorks/svg2pdf.js",
+    "url": "https://github.com/yWorks/svg2pdf.js",
+    "license": "MIT",
+    "branch": "master",
+    "archived": false,
+    "stars": 839,
+    "pushed_at": "2026-10-01T09:04:01Z",
+    "description": "A javascript-only SVG to PDF conversion utility that runs in the browser. Brought to you by yWorks - the diagramming experts",
+    "error": null
+  },
+  {
+    "repo": "Dexie/Dexie.js",
+    "url": "https://github.com/dexie/Dexie.js",
+    "license": "Apache-2.0",
+    "branch": "master",
+    "archived": false,
+    "stars": 14628,
+    "pushed_at": "2026-10-09T09:27:54Z",
+    "description": "A Minimalistic Wrapper for IndexedDB",
+    "error": null
+  },
+  {
+    "repo": "lucide-icons/lucide",
+    "url": "https://github.com/lucide-icons/lucide",
+    "license": "NOASSERTION",
+    "branch": "main",
+    "archived": false,
+    "stars": 24912,
+    "pushed_at": "2026-10-09T14:29:25Z",
+    "description": "Beautiful & consistent icon toolkit made by the community. Open-source project and a fork of Feather Icons.",
+    "error": null
+  },
+  {
+    "repo": "notofonts/noto-cjk",
+    "url": "https://github.com/notofonts/noto-cjk",
+    "license": null,
+    "branch": "main",
+    "archived": false,
+    "stars": 4091,
+    "pushed_at": "2025-12-16T05:18:51Z",
+    "description": "Noto CJK fonts",
+    "error": null
+  }
+]

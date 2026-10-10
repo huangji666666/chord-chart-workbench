@@ -1,0 +1,450 @@
+[
+  {
+    "repo": "martijnversluis/ChordSheetJS",
+    "path": "LICENSE",
+    "source": "https://github.com/martijnversluis/ChordSheetJS/blob/master/LICENSE",
+    "download": "https://raw.githubusercontent.com/martijnversluis/ChordSheetJS/master/LICENSE",
+    "gitBlobSha": "23cb790338e191e29205d6f4123882c0583ef8eb",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\martijnversluis__ChordSheetJS\\LICENSE",
+    "sha256": "DB296F2F7F35BCA3A174EFB0EB392B3B17BD94B341851429A3DFF411B1C2FC73",
+    "error": null
+  },
+  {
+    "repo": "martijnversluis/ChordSheetJS",
+    "path": "README.md",
+    "source": "https://github.com/martijnversluis/ChordSheetJS/blob/master/README.md",
+    "download": "https://raw.githubusercontent.com/martijnversluis/ChordSheetJS/master/README.md",
+    "gitBlobSha": "d7c8464c247433d4cabafb7236010bb6600b5cfd",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\martijnversluis__ChordSheetJS\\README.md",
+    "sha256": "01E07C602C1A24C8947945978D73D04825D2650766AC0BF7E14F51B294D10E3C",
+    "error": null
+  },
+  {
+    "repo": "martijnversluis/ChordSheetJS",
+    "path": "package.json",
+    "source": "https://github.com/martijnversluis/ChordSheetJS/blob/master/package.json",
+    "download": "https://raw.githubusercontent.com/martijnversluis/ChordSheetJS/master/package.json",
+    "gitBlobSha": "9f2bab71d0b100584306eba3a5e0afa836253a92",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\martijnversluis__ChordSheetJS\\package.json",
+    "sha256": "83496002C69B886E363F9A53D910EA21775E7AF09CC956F52B77765A2FE8B5F3",
+    "error": null
+  },
+  {
+    "repo": "tonaljs/tonal",
+    "path": "README.md",
+    "source": "https://github.com/tonaljs/tonal/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/tonaljs/tonal/main/README.md",
+    "gitBlobSha": "3a9f78919ccb6390be44ce6f1ee6f63dc2398213",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\tonaljs__tonal\\README.md",
+    "sha256": "9C92443E9A536AEF77D75D4B1A6013F05A8D87A4FDAE3FA5601D1146F34C6ADC",
+    "error": null
+  },
+  {
+    "repo": "tonaljs/tonal",
+    "path": "package.json",
+    "source": "https://github.com/tonaljs/tonal/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/tonaljs/tonal/main/package.json",
+    "gitBlobSha": "eea2e4e9c93f05e61ca97bdb608019c4ffadfa41",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\tonaljs__tonal\\package.json",
+    "sha256": "C913E8C6419D31CBED3CA8A51A3435AA17E17D096B2327D5974CCB36087E0995",
+    "error": null
+  },
+  {
+    "repo": "Tonejs/Tone.js",
+    "path": "LICENSE.md",
+    "source": "https://github.com/Tonejs/Tone.js/blob/dev/LICENSE.md",
+    "download": "https://raw.githubusercontent.com/Tonejs/Tone.js/dev/LICENSE.md",
+    "gitBlobSha": "9368a0276030d8dc22200bdc3071ffa77ae0c393",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Tonejs__Tone.js\\LICENSE.md",
+    "sha256": "C2F9E2F9FD21639E8F8976E56B7DF01D6EFCC3B003DFD43CA59D4B10616EFCE7",
+    "error": null
+  },
+  {
+    "repo": "Tonejs/Tone.js",
+    "path": "README.md",
+    "source": "https://github.com/Tonejs/Tone.js/blob/dev/README.md",
+    "download": "https://raw.githubusercontent.com/Tonejs/Tone.js/dev/README.md",
+    "gitBlobSha": "bd444cf823f64d845ff4c172ca45660fa63b0c62",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Tonejs__Tone.js\\README.md",
+    "sha256": "E5D6CA90282D44617B8411A312243566D82EF0FBA2E8F7FB3D5F23FE3AE708F4",
+    "error": null
+  },
+  {
+    "repo": "Tonejs/Tone.js",
+    "path": "package.json",
+    "source": "https://github.com/Tonejs/Tone.js/blob/dev/package.json",
+    "download": "https://raw.githubusercontent.com/Tonejs/Tone.js/dev/package.json",
+    "gitBlobSha": "4791fd97135633dca6996eefa53af394f4291d38",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Tonejs__Tone.js\\package.json",
+    "sha256": "61E0822C4F469D34F696572A666B5A5EA6B02321FB19FAC51F3DDD55C3C1B8AF",
+    "error": null
+  },
+  {
+    "repo": "yezhiyi9670/sparks-notation-1",
+    "path": "LICENSE",
+    "source": "https://github.com/yezhiyi9670/sparks-notation-1/blob/main/LICENSE",
+    "download": "https://raw.githubusercontent.com/yezhiyi9670/sparks-notation-1/main/LICENSE",
+    "gitBlobSha": "f433b1a53f5b830a205fd2df78e2b34974656c7b",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yezhiyi9670__sparks-notation-1\\LICENSE",
+    "sha256": "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594",
+    "error": null
+  },
+  {
+    "repo": "yezhiyi9670/sparks-notation-1",
+    "path": "NOTICE",
+    "source": "https://github.com/yezhiyi9670/sparks-notation-1/blob/main/NOTICE",
+    "download": "https://raw.githubusercontent.com/yezhiyi9670/sparks-notation-1/main/NOTICE",
+    "gitBlobSha": "a604ed69d62052aaec44fbf3919a6618bfec8f68",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yezhiyi9670__sparks-notation-1\\NOTICE",
+    "sha256": "05E43BF6BE28FB862ACDA6541536305A09178971F09AD3F24DE1497C13A20558",
+    "error": null
+  },
+  {
+    "repo": "yezhiyi9670/sparks-notation-1",
+    "path": "README.md",
+    "source": "https://github.com/yezhiyi9670/sparks-notation-1/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/yezhiyi9670/sparks-notation-1/main/README.md",
+    "gitBlobSha": "074fbe3595cf0312f3775cb44c4f8693ff26f723",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yezhiyi9670__sparks-notation-1\\README.md",
+    "sha256": "10A458C9D92BB5454E7BF519E3D4797C40BEED1635BC8836FD4AC9D26B0777F9",
+    "error": null
+  },
+  {
+    "repo": "yezhiyi9670/sparks-notation-1",
+    "path": "package.json",
+    "source": "https://github.com/yezhiyi9670/sparks-notation-1/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/yezhiyi9670/sparks-notation-1/main/package.json",
+    "gitBlobSha": "53f533cf2a96f96dd4e5c4c7eedf1e66d66295f4",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yezhiyi9670__sparks-notation-1\\package.json",
+    "sha256": "ADF37F96D35EA8258856CC39804C5EA2368F0C39FE4D288FCFCBD5161A582452",
+    "error": null
+  },
+  {
+    "repo": "flufy3d/JianpuRender",
+    "path": "LICENSE",
+    "source": "https://github.com/flufy3d/JianpuRender/blob/main/LICENSE",
+    "download": "https://raw.githubusercontent.com/flufy3d/JianpuRender/main/LICENSE",
+    "gitBlobSha": "69b829d7e6aed8243a6d57770d5a82857a4e3f34",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\flufy3d__JianpuRender\\LICENSE",
+    "sha256": "744BD7B273AF7676C36540DF61541EC2D2A84A4B0C049B53E462E585F7F76039",
+    "error": null
+  },
+  {
+    "repo": "flufy3d/JianpuRender",
+    "path": "README.md",
+    "source": "https://github.com/flufy3d/JianpuRender/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/flufy3d/JianpuRender/main/README.md",
+    "gitBlobSha": "8f5d3ec0048111f065c315399359c097f4674dda",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\flufy3d__JianpuRender\\README.md",
+    "sha256": "9D4A4B1D37FD7242CCA657A1D9EC3D74459985461548900FFE121EDDD2F57523",
+    "error": null
+  },
+  {
+    "repo": "flufy3d/JianpuRender",
+    "path": "package.json",
+    "source": "https://github.com/flufy3d/JianpuRender/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/flufy3d/JianpuRender/main/package.json",
+    "gitBlobSha": "9a529e532b40e932f6909ae1d9169e01650936d4",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\flufy3d__JianpuRender\\package.json",
+    "sha256": "2461DD6A3B91009361BF07455C042C8C6D4D87E9DB4B908CCAFF3C5E2EA250E8",
+    "error": null
+  },
+  {
+    "repo": "jachy-h/hh-jianpu",
+    "path": "Readme.md",
+    "source": "https://github.com/jachy-h/hh-jianpu/blob/main/Readme.md",
+    "download": "https://raw.githubusercontent.com/jachy-h/hh-jianpu/main/Readme.md",
+    "gitBlobSha": "cd2f644ed6e83d15b7ae23cf04ed055338adab9f",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\jachy-h__hh-jianpu\\Readme.md",
+    "sha256": "7720A5260FF07801D8AAA28344C58CC8A5F6A67C959F926523753F824BC500C1",
+    "error": null
+  },
+  {
+    "repo": "jachy-h/hh-jianpu",
+    "path": "package.json",
+    "source": "https://github.com/jachy-h/hh-jianpu/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/jachy-h/hh-jianpu/main/package.json",
+    "gitBlobSha": "ccca342254c834f457db559402eff02a75f0dab4",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\jachy-h__hh-jianpu\\package.json",
+    "sha256": "29099F69C5C3B32DADF39772AA93E8040F78C10CC38C9B9A094F1D6D9B5DE072",
+    "error": null
+  },
+  {
+    "repo": "paulrosen/abcjs",
+    "path": "LICENSE.md",
+    "source": "https://github.com/paulrosen/abcjs/blob/main/LICENSE.md",
+    "download": "https://raw.githubusercontent.com/paulrosen/abcjs/main/LICENSE.md",
+    "gitBlobSha": "ad4789d9d79f0b6e095441c2ff2f08a9770f6e83",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\paulrosen__abcjs\\LICENSE.md",
+    "sha256": "D7BDCD152B978ADEE22A2F9B92A4D72C4EC2C20A86512766C7C210B462B54702",
+    "error": null
+  },
+  {
+    "repo": "paulrosen/abcjs",
+    "path": "README.md",
+    "source": "https://github.com/paulrosen/abcjs/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/paulrosen/abcjs/main/README.md",
+    "gitBlobSha": "3c8582e5b180cd3b2b97b69684498351f13f9762",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\paulrosen__abcjs\\README.md",
+    "sha256": "C59D20790A5EC7D7C821BBC8F49FACBB39162F095C67EAE536BC02BB703B7D74",
+    "error": null
+  },
+  {
+    "repo": "paulrosen/abcjs",
+    "path": "license.js",
+    "source": "https://github.com/paulrosen/abcjs/blob/main/license.js",
+    "download": "https://raw.githubusercontent.com/paulrosen/abcjs/main/license.js",
+    "gitBlobSha": "cf4995c926a247dc16b7822af592e5cca5734049",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\paulrosen__abcjs\\license.js",
+    "sha256": "842634CF42996C9BB69E70B94E1A7293A85AB3816DF729C8CA01EED7A322AD74",
+    "error": null
+  },
+  {
+    "repo": "paulrosen/abcjs",
+    "path": "package.json",
+    "source": "https://github.com/paulrosen/abcjs/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/paulrosen/abcjs/main/package.json",
+    "gitBlobSha": "2143da963beed955fcd1da94330de24187cca1e8",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\paulrosen__abcjs\\package.json",
+    "sha256": "D0FB5CB92AD8247634F66D86836231CD8C71F9B6EDB1F12BB7B6324F8D814629",
+    "error": null
+  },
+  {
+    "repo": "CoderLine/alphaTab",
+    "path": "LICENSE",
+    "source": "https://github.com/CoderLine/alphaTab/blob/develop/LICENSE",
+    "download": "https://raw.githubusercontent.com/CoderLine/alphaTab/develop/LICENSE",
+    "gitBlobSha": "2a5ee62cf0fb0d7a032d345d93f6f5da222af92d",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\CoderLine__alphaTab\\LICENSE",
+    "sha256": "3944BCFA6351AB72FC15EDAC4A38E614453E978D5B71E288C23762FE71CF6AA5",
+    "error": null
+  },
+  {
+    "repo": "CoderLine/alphaTab",
+    "path": "README.md",
+    "source": "https://github.com/CoderLine/alphaTab/blob/develop/README.md",
+    "download": "https://raw.githubusercontent.com/CoderLine/alphaTab/develop/README.md",
+    "gitBlobSha": "e8e76cfb1f5f646225edd77dfce7c14a05047c1e",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\CoderLine__alphaTab\\README.md",
+    "sha256": "54D5255F64AC2C4247577C79139E90B7889D0713AA672BDE07007DE595450C9A",
+    "error": null
+  },
+  {
+    "repo": "CoderLine/alphaTab",
+    "path": "package.json",
+    "source": "https://github.com/CoderLine/alphaTab/blob/develop/package.json",
+    "download": "https://raw.githubusercontent.com/CoderLine/alphaTab/develop/package.json",
+    "gitBlobSha": "0424d89219addbd72a22d8f762d5094686607090",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\CoderLine__alphaTab\\package.json",
+    "sha256": "6ECBEE2F671C62EB7A5AB931329CF7FA956340CFB3BDA831275F4FDE05D5D5E2",
+    "error": null
+  },
+  {
+    "repo": "opensheetmusicdisplay/opensheetmusicdisplay",
+    "path": "LICENSE",
+    "source": "https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/develop/LICENSE",
+    "download": "https://raw.githubusercontent.com/opensheetmusicdisplay/opensheetmusicdisplay/develop/LICENSE",
+    "gitBlobSha": "05dd9b312fb53c5c98d94d82f43d4ec28108c952",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\opensheetmusicdisplay__opensheetmusicdisplay\\LICENSE",
+    "sha256": "261655F10CF6B90BD062FBE3C7FA4DD03E0324FDFC4B53A3C7D626E3AEC694A8",
+    "error": null
+  },
+  {
+    "repo": "opensheetmusicdisplay/opensheetmusicdisplay",
+    "path": "README.md",
+    "source": "https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/develop/README.md",
+    "download": "https://raw.githubusercontent.com/opensheetmusicdisplay/opensheetmusicdisplay/develop/README.md",
+    "gitBlobSha": "dd2afaf53a88fb8c19362b5f54856d742f55afef",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\opensheetmusicdisplay__opensheetmusicdisplay\\README.md",
+    "sha256": "DE99421152D98DB3ED61A4E50AB6644F04A070F5AB035110AEBD26D8C98E06AD",
+    "error": null
+  },
+  {
+    "repo": "opensheetmusicdisplay/opensheetmusicdisplay",
+    "path": "package.json",
+    "source": "https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/develop/package.json",
+    "download": "https://raw.githubusercontent.com/opensheetmusicdisplay/opensheetmusicdisplay/develop/package.json",
+    "gitBlobSha": "06eac310e5aa45b98624bf3ac5b04ccf5e05b873",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\opensheetmusicdisplay__opensheetmusicdisplay\\package.json",
+    "sha256": "076FEF533BCE02D52CF7AF82AC5740443EC17C7BE0BFD08F05A61C490F766B52",
+    "error": null
+  },
+  {
+    "repo": "chordpro/chordpro",
+    "path": "LICENSE",
+    "source": "https://github.com/ChordPro/chordpro/blob/master/LICENSE",
+    "download": "https://raw.githubusercontent.com/ChordPro/chordpro/master/LICENSE",
+    "gitBlobSha": "3d42039e00e8e4db5c428a014b88dd370201070c",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\chordpro__chordpro\\LICENSE",
+    "sha256": "BDE882EE048A6E39A5D189D5234F4F9B66AC1FAB846900624542998B86E5D26B",
+    "error": null
+  },
+  {
+    "repo": "chordpro/chordpro",
+    "path": "README.md",
+    "source": "https://github.com/ChordPro/chordpro/blob/master/README.md",
+    "download": "https://raw.githubusercontent.com/ChordPro/chordpro/master/README.md",
+    "gitBlobSha": "7b265aaf181e38c0c68fb3910c49d41f0c02062a",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\chordpro__chordpro\\README.md",
+    "sha256": "BA7C14423571A78A3564DC9138C2A2544D6AEE02B3A3BD98619CE9906D687B14",
+    "error": null
+  },
+  {
+    "repo": "maneckeb/open-setlist",
+    "path": "README.md",
+    "source": "https://github.com/maneckeb/open-setlist/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/maneckeb/open-setlist/main/README.md",
+    "gitBlobSha": "4779eda1b8fef157c6d953ea4899cc9578a10e2a",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\maneckeb__open-setlist\\README.md",
+    "sha256": "3FC1A29C0970E2BD3D37AF2809FC4246C3992E35B5C143F8A73ACA75E32975A1",
+    "error": null
+  },
+  {
+    "repo": "maneckeb/open-setlist",
+    "path": "package.json",
+    "source": "https://github.com/maneckeb/open-setlist/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/maneckeb/open-setlist/main/package.json",
+    "gitBlobSha": "6fba653101dba8ce2bd75c65e81d4d269d4745bd",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\maneckeb__open-setlist\\package.json",
+    "sha256": "D43D7CD91CADEB20A852E1A97C3AC4702BBD3FA3F386C7AF6FCC05601F60F7E0",
+    "error": null
+  },
+  {
+    "repo": "rusahu/chordvault",
+    "path": "LICENSE",
+    "source": "https://github.com/rusahu/chordvault/blob/main/LICENSE",
+    "download": "https://raw.githubusercontent.com/rusahu/chordvault/main/LICENSE",
+    "gitBlobSha": "f1e62ff2f38a776eef6db6c8193ae2b6be8f0638",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\rusahu__chordvault\\LICENSE",
+    "sha256": "6C539A6153C028541EA3603305469ACFC2494300075719A2E39C3837C9FD1FC9",
+    "error": null
+  },
+  {
+    "repo": "rusahu/chordvault",
+    "path": "README.md",
+    "source": "https://github.com/rusahu/chordvault/blob/main/README.md",
+    "download": "https://raw.githubusercontent.com/rusahu/chordvault/main/README.md",
+    "gitBlobSha": "ee9eeed7d1f535174857af2c048ad810e917a7ed",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\rusahu__chordvault\\README.md",
+    "sha256": "54E2F5F5300D698FBB23B32343EA4CEC84251185B72D4C42406B0028B7A3C42E",
+    "error": null
+  },
+  {
+    "repo": "rusahu/chordvault",
+    "path": "package.json",
+    "source": "https://github.com/rusahu/chordvault/blob/main/package.json",
+    "download": "https://raw.githubusercontent.com/rusahu/chordvault/main/package.json",
+    "gitBlobSha": "6990f86b5e24e5b7ea622ddfed5598df856d9747",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\rusahu__chordvault\\package.json",
+    "sha256": "2AC9C8138703494F5059CD6532C1E28A87BED4A4F7463F9C57F356012E8048A3",
+    "error": null
+  },
+  {
+    "repo": "parallax/jsPDF",
+    "path": "LICENSE",
+    "source": "https://github.com/parallax/jsPDF/blob/master/LICENSE",
+    "download": "https://raw.githubusercontent.com/parallax/jsPDF/master/LICENSE",
+    "gitBlobSha": "dc7d3a9fa305defebad6cb88ba4cd9776f26fcd3",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\parallax__jsPDF\\LICENSE",
+    "sha256": "DC388EC35FF463288CDDE3588A36FD4ED12A45DEFF053243B37309ACC9EF583B",
+    "error": null
+  },
+  {
+    "repo": "parallax/jsPDF",
+    "path": "README.md",
+    "source": "https://github.com/parallax/jsPDF/blob/master/README.md",
+    "download": "https://raw.githubusercontent.com/parallax/jsPDF/master/README.md",
+    "gitBlobSha": "50b5467f71e850870f31625c328846e8b5d5910c",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\parallax__jsPDF\\README.md",
+    "sha256": "CE9BBE5463272D339410624A2A464363B468E65027E0C8FC508B41D369DA68E3",
+    "error": null
+  },
+  {
+    "repo": "parallax/jsPDF",
+    "path": "package.json",
+    "source": "https://github.com/parallax/jsPDF/blob/master/package.json",
+    "download": "https://raw.githubusercontent.com/parallax/jsPDF/master/package.json",
+    "gitBlobSha": "8fcb894d49ffa509282d3da7b93d3bd941007d51",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\parallax__jsPDF\\package.json",
+    "sha256": "BBF97DB5E78A93A4A98E3AD9E82978E090CA9C0909DADC1F342298AE76F5F936",
+    "error": null
+  },
+  {
+    "repo": "yWorks/svg2pdf.js",
+    "path": "LICENSE",
+    "source": "https://github.com/yWorks/svg2pdf.js/blob/master/LICENSE",
+    "download": "https://raw.githubusercontent.com/yWorks/svg2pdf.js/master/LICENSE",
+    "gitBlobSha": "c3e4cdb7e6e2a0f8439b964dcd588760b71d3a4e",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yWorks__svg2pdf.js\\LICENSE",
+    "sha256": "04DB7FB792D065C8C9A0E3A7A8255CD36E32B263CA023CBEA10DAEE4A45132B8",
+    "error": null
+  },
+  {
+    "repo": "yWorks/svg2pdf.js",
+    "path": "README.md",
+    "source": "https://github.com/yWorks/svg2pdf.js/blob/master/README.md",
+    "download": "https://raw.githubusercontent.com/yWorks/svg2pdf.js/master/README.md",
+    "gitBlobSha": "d202c5b279ba847c0bcb8e62c1348d7e29c5abbf",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yWorks__svg2pdf.js\\README.md",
+    "sha256": "E97E3A3137E41A68A6B44E81C710FE0829C6CA6B275BDDF293E45FF7D2B9A85B",
+    "error": null
+  },
+  {
+    "repo": "yWorks/svg2pdf.js",
+    "path": "package.json",
+    "source": "https://github.com/yWorks/svg2pdf.js/blob/master/package.json",
+    "download": "https://raw.githubusercontent.com/yWorks/svg2pdf.js/master/package.json",
+    "gitBlobSha": "2e9eb74d21b55a73630480477c76915eee5a7810",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\yWorks__svg2pdf.js\\package.json",
+    "sha256": "59B914527B20149E9D24D5A28A14D352CBCE3B97F1B35759033CE78A7FE2A009",
+    "error": null
+  },
+  {
+    "repo": "Dexie/Dexie.js",
+    "path": "LICENSE",
+    "source": "https://github.com/dexie/Dexie.js/blob/master/LICENSE",
+    "download": "https://raw.githubusercontent.com/dexie/Dexie.js/master/LICENSE",
+    "gitBlobSha": "e06d2081865a766a8668acc12878f98b27fc9ea0",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Dexie__Dexie.js\\LICENSE",
+    "sha256": "CB5E8E7E5F4A3988E1063C142C60DC2DF75605F4C46515E776E3ACA6DF976E14",
+    "error": null
+  },
+  {
+    "repo": "Dexie/Dexie.js",
+    "path": "NOTICE",
+    "source": "https://github.com/dexie/Dexie.js/blob/master/NOTICE",
+    "download": "https://raw.githubusercontent.com/dexie/Dexie.js/master/NOTICE",
+    "gitBlobSha": "9de226815fbe5d180bfbb46705c6e43a19f6087a",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Dexie__Dexie.js\\NOTICE",
+    "sha256": "6176D2E8A3FD8A881828A1A27BBCC5A9E03A75F437CE3C4DDBEDD94FDAC475C1",
+    "error": null
+  },
+  {
+    "repo": "Dexie/Dexie.js",
+    "path": "README.md",
+    "source": "https://github.com/dexie/Dexie.js/blob/master/README.md",
+    "download": "https://raw.githubusercontent.com/dexie/Dexie.js/master/README.md",
+    "gitBlobSha": "35a2fed726d484c8c5f2c9e5fe6f9818d5bc2fe4",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Dexie__Dexie.js\\README.md",
+    "sha256": "9D4555452299B51FD7A6C5C6E44C03E9F045613E4808AD3BB26E2377D70B7ACE",
+    "error": null
+  },
+  {
+    "repo": "Dexie/Dexie.js",
+    "path": "package.json",
+    "source": "https://github.com/dexie/Dexie.js/blob/master/package.json",
+    "download": "https://raw.githubusercontent.com/dexie/Dexie.js/master/package.json",
+    "gitBlobSha": "ca387b7a0839e2846379ede45a5e0278e57e2032",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Dexie__Dexie.js\\package.json",
+    "sha256": "42C393E5D1C64FD7F3CB5DD80F394099519614B18EA43F8DEADBC8180F600F52",
+    "error": null
+  },
+  {
+    "repo": "lucide-icons/lucide",
+    "error": "Response status code does not indicate success: 403 (rate limit exceeded)."
+  },
+  {
+    "repo": "Encaik/simple-notation",
+    "error": "Response status code does not indicate success: 403 (rate limit exceeded)."
+  }
+]

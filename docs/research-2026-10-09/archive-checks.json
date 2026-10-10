@@ -1,0 +1,23 @@
+[
+  {
+    "file": "ChordSheetJS-master.zip",
+    "bytes": 1198279,
+    "entries": 515,
+    "sha256": "DDDD9EC05D46D8423BF1F59DA3DAAA536C284CE8E9B84F37D12AA03305699B8D",
+    "zipOpen": "passed"
+  },
+  {
+    "file": "JianpuRender-main.zip",
+    "bytes": 171100,
+    "entries": 54,
+    "sha256": "3F0DCFD81819B9EC4F31EEA536E3940011127F1629A2E61D8385AD97B7BC3685",
+    "zipOpen": "passed"
+  },
+  {
+    "file": "simple-notation-main.zip",
+    "bytes": 71680814,
+    "entries": 464,
+    "sha256": "4F1D17801ABCC2F405BB655656FC75E99BF83FD9FC979E90A097CEDAB17FCF5C",
+    "zipOpen": "passed"
+  }
+]

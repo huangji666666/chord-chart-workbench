@@ -1,0 +1,113 @@
+{
+  "name": "chordsheetjs",
+  "author": "Martijn Versluis",
+  "version": "18.0.0",
+  "description": "A JavaScript library for parsing and formatting chord sheets",
+  "source": "src/index.ts",
+  "main": "lib/index.js",
+  "module": "lib/module.js",
+  "types": "lib/main.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/main.d.ts",
+      "import": "./lib/module.js",
+      "require": "./lib/index.js"
+    },
+    "./pdf": {
+      "types": "./lib/pdf/main.d.ts",
+      "import": "./lib/pdf/module.js",
+      "require": "./lib/pdf/index.js"
+    }
+  },
+  "files": [
+    "/lib"
+  ],
+  "bundle": {
+    "default": "lib/bundle.js",
+    "minified": "lib/bundle.min.js",
+    "globalName": "ChordSheetJS"
+  },
+  "license": "GPL-2.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/martijnversluis/ChordSheetJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/martijnversluis/ChordSheetJS/issues"
+  },
+  "homepage": "https://github.com/martijnversluis/ChordSheetJS",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@codemirror/commands": "^6.0.0",
+    "@codemirror/lang-json": "^6.0.0",
+    "@codemirror/language": "^6.0.0",
+    "@codemirror/lint": "^6.0.0",
+    "@codemirror/state": "^6.0.0",
+    "@codemirror/view": "^6.0.0",
+    "@eslint/core": "^1.1.0",
+    "@eslint/js": "^10.0.1",
+    "@martijnversluis/unibuild": "^2.0.3",
+    "@parcel/packager-ts": "2.16.4",
+    "@parcel/transformer-typescript-types": "2.16.4",
+    "@types/jest": "^30.0.0",
+    "@types/js-levenshtein": "^1",
+    "@types/node": "^26.0.0",
+    "@types/web": "^0.0.357",
+    "@typescript-eslint/utils": "^8.56.1",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.0.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-jest": "^29.15.0",
+    "fonteditor-core": "2.6.3",
+    "globals": "^17.0.0",
+    "jest": "^30.0.0",
+    "js-levenshtein": "^1.1.6",
+    "jspdf": "^4.0.0",
+    "parcel": "2.16.4",
+    "peggy": "^5.0.2",
+    "pegjs-backtrace": "^0.2.1",
+    "print": "^1.2.0",
+    "process": "^0.11.10",
+    "puppeteer": "^25.0.2",
+    "theredoc": "^1.0.0",
+    "ts-jest": "^29.2.3",
+    "ts-node": "^10.9.2",
+    "ts-pegjs": "^4.2.2",
+    "tsx": "^4.10.5",
+    "typedoc": "^0.28.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.56.1"
+  },
+  "scripts": {
+    "build": "yarn unibuild",
+    "build:release": "yarn unibuild --force --release",
+    "ci": "yarn install && yarn unibuild ci",
+    "debug:chord": "yarn build && tsx script/debug_parser.ts chord",
+    "debug:chordpro": "yarn build && tsx script/debug_parser.ts chord_pro",
+    "debug:chords-over-words": "yarn build && tsx script/debug_parser.ts chords_over_words --include-chord-grammar",
+    "dev": "parcel watch --no-cache",
+    "dev:pdf": "parcel test/formatter/pdf/index.html --port=3302",
+    "dev:html": "parcel test/formatter/pdf/html-test.html --port=3301",
+    "eslint": "node_modules/.bin/eslint",
+    "fonts:check": "tsx script/check_symbol_fonts.ts",
+    "lint": "yarn unibuild lint",
+    "lint:fix": "yarn unibuild lint --fix",
+    "postversion": "yarn build:release",
+    "prepare": "yarn install && yarn build",
+    "publish:canary": "tsx script/publish_canary.ts",
+    "release": "yarn install && (yarn npm whoami || (echo 'Not logged in. Run: yarn npm login' && exit 1)) && yarn unibuild release",
+    "test": "yarn unibuild lint && yarn unibuild test",
+    "playground": "cd playground && parcel index.html --port=3300 --no-cache"
+  },
+  "peerDependencies": {
+    "jspdf": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "jspdf": {
+      "optional": true
+    }
+  },
+  "packageManager": "yarn@4.2.2"
+}

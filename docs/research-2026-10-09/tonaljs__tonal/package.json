@@ -1,0 +1,58 @@
+{
+  "name": "workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "main": "packages/tonal/dist/index.js",
+  "module": "packages/tonal/dist/index.mjs",
+  "types": "packages/tonal/dist/index.d.ts",
+  "scripts": {
+    "publish-packages": "npm run test:all && changeset version && changeset publish",
+    "build": "turbo run build",
+    "format": "prettier --write packages/**/*.ts packages/**/package.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint 'packages/**/*.ts'",
+    "lint:fix": "eslint 'packages/**/*.ts' --fix",
+    "test:all": "npm run format && npm run lint && npm run build && npm run test:run"
+  },
+  "prettier": {},
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module",
+      "project": "./tsconfig.json"
+    },
+    "ignorePatterns": [
+      "packages/**/dist/*"
+    ]
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
+    "lodash": "^4.18.1",
+    "prettier": "^3.9.6",
+    "tsdown": "^0.22.14",
+    "turbo": "^2.10.5",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "packageManager": "npm@11.0.0"
+}

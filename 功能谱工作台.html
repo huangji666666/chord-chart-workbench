@@ -1,0 +1,2398 @@
+<!-- AI生成 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>功能谱工作台 · Lead Sheet</title>
+<style>
+:root{
+  --bg:#E7E2D8;
+  --bg-deep:#D9D2C4;
+  --paper:#FBF9F4;
+  --ink:#1C1C1C;
+  --muted:#6B6B6B;
+  --faint:#9A9A9A;
+  --line:#D4CEC2;
+  --accent:#2D6A4F;
+  --accent-soft:#E3EFE8;
+  --accent-ink:#1B4332;
+  --danger:#B3541E;
+  --danger-soft:#F8E8DC;
+  --warn:#8A6D1D;
+  --warn-soft:#F5EED8;
+  --shadow:0 1px 2px rgba(28,28,28,.06), 0 8px 24px rgba(28,28,28,.06);
+  --radius:14px;
+  --rail:300px;
+  --ui-font:"PingFang SC","Noto Sans SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  --chart-font:"Noto Sans SC","PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  --chord-size:1;
+  --lyric-size:1.35;
+  --degree-size:0.82;
+  --cols:4;
+  --cols-print:4;
+}
+html[data-theme="mono"]{
+  --bg:#ECECEC; --bg-deep:#DEDEDE; --paper:#FFFFFF; --ink:#111; --muted:#555; --faint:#888;
+  --line:#CFCFCF; --accent:#222; --accent-soft:#F0F0F0; --accent-ink:#111;
+  --danger:#333; --danger-soft:#EEE; --warn:#444; --warn-soft:#F5F5F5;
+}
+html[data-theme="white"]{
+  --bg:#FFFFFF; --bg-deep:#F3F3F3; --paper:#FFFFFF; --ink:#111; --muted:#666; --faint:#999;
+  --line:#E5E5E5; --accent:#1F6B4A; --accent-soft:#EEF6F1; --accent-ink:#164A34;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--ui-font);
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,.55), transparent 50%),
+    var(--bg);
+  overflow:hidden;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:var(--rail) 1fr;height:100vh}
+/* ---- left rail ---- */
+.rail{
+  background:color-mix(in srgb, var(--paper) 78%, var(--bg));
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;min-height:0;
+  z-index:5;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 16px 12px;border-bottom:1px solid var(--line);
+}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--accent);color:#fff;display:grid;place-items:center;
+  font-weight:700;letter-spacing:.02em;flex:0 0 auto;
+}
+.brand h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
+.brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+.rail-body{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.panel{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.panel>summary{
+  list-style:none;cursor:pointer;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-size:13px;font-weight:650;user-select:none;
+}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary::after{content:"";width:8px;height:8px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(45deg);margin-top:-4px;transition:.15s}
+.panel[open]>summary::after{transform:rotate(225deg);margin-top:2px}
+.panel-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.field input,.field select,.field textarea{
+  border:1px solid var(--line);background:#fff;border-radius:10px;
+  padding:8px 10px;font-size:13px;outline:none;min-height:38px;
+}
+.field textarea{min-height:96px;resize:vertical;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.btn{
+  border:1px solid var(--line);background:#fff;border-radius:10px;
+  padding:8px 12px;font-size:12.5px;font-weight:600;min-height:38px;
+}
+.btn:hover{border-color:color-mix(in srgb, var(--accent) 40%, var(--line));background:var(--accent-soft)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{filter:brightness(1.08);background:var(--accent)}
+.btn-ghost{background:transparent}
+.btn-danger{color:var(--danger);border-color:color-mix(in srgb, var(--danger) 35%, var(--line))}
+.btn-danger:hover{background:var(--danger-soft)}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px}
+.btn-row .btn{flex:1 1 auto}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+  background:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;min-height:34px;
+}
+.chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.hint{font-size:11px;color:var(--muted);line-height:1.5}
+.hint code{background:var(--bg);padding:1px 5px;border-radius:4px}
+.error{
+  background:var(--danger-soft);border:1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
+  color:var(--danger);border-radius:10px;padding:8px 10px;font-size:12px;white-space:pre-wrap;line-height:1.45;
+}
+.warn{
+  background:var(--warn-soft);border:1px solid color-mix(in srgb, var(--warn) 30%, var(--line));
+  color:var(--warn);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.45;
+}
+/* library list */
+.lib-tools{display:flex;gap:8px;flex-wrap:wrap}
+.search{
+  width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;font-size:13px;min-height:38px;
+}
+.song-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto}
+.song-item{
+  display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;
+  border:1px solid transparent;background:color-mix(in srgb, var(--bg) 55%, #fff);
+  border-radius:12px;padding:10px 10px 10px 12px;text-align:left;width:100%;
+}
+.song-item:hover{border-color:var(--line)}
+.song-item.active{border-color:var(--accent);background:var(--accent-soft)}
+.song-item .t{font-size:13px;font-weight:700;line-height:1.3}
+.song-item .a{font-size:11px;color:var(--muted);margin-top:2px}
+.song-item .meta{font-size:10px;color:var(--faint);margin-top:4px}
+.fav{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;
+  display:grid;place-items:center;font-size:15px;line-height:1;
+}
+.fav.on{background:#FFF6D8;border-color:#E0C86A;color:#B08900}
+.empty{
+  border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center;
+  color:var(--muted);font-size:12px;line-height:1.5;
+}
+/* ---- main ---- */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 18px;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb, var(--paper) 85%, transparent);
+  backdrop-filter:blur(8px);
+}
+.modes{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.modes button{
+  border:0;background:transparent;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:650;min-height:36px;color:var(--muted);
+}
+.modes button.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
+.top-title{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.top-title strong{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-title span{font-size:11px;color:var(--muted)}
+.status{
+  font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.dot.warn{background:var(--danger)}
+.canvas-wrap{flex:1;overflow:auto;padding:22px;display:flex;justify-content:center}
+.paper{
+  width:min(920px,100%);
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  padding:28px 28px 36px;
+  min-height:calc(100% - 8px);
+}
+.paper-head{
+  display:flex;justify-content:space-between;gap:18px;align-items:flex-start;
+  padding-bottom:16px;margin-bottom:8px;border-bottom:1px solid var(--line);
+}
+.paper-head h2{margin:0;font-size:28px;letter-spacing:.01em;line-height:1.15}
+.paper-head .sub{margin-top:6px;font-size:13px;color:var(--muted)}
+.paper-head .keys{
+  text-align:right;font-size:12px;color:var(--muted);line-height:1.7;white-space:nowrap;
+}
+.paper-head .keys b{color:var(--ink);font-size:14px}
+.notes-block{
+  margin:10px 0 18px;padding:10px 12px;border-left:3px solid var(--accent);
+  background:color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  border-radius:0 10px 10px 0;font-size:13px;line-height:1.55;color:var(--accent-ink);
+}
+.section{margin:22px 0 18px}
+.section-head{
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;
+}
+.section-name{
+  font-size:18px;font-weight:800;letter-spacing:.02em;
+  background:linear-gradient(transparent 62%, var(--accent-soft) 62%);
+  padding:0 4px;
+}
+.section-meta{font-size:11px;color:var(--muted);font-weight:600}
+.section-cue{
+  font-size:12px;color:var(--accent-ink);background:var(--accent-soft);
+  padding:3px 8px;border-radius:999px;font-weight:650;
+}
+.bars{
+  display:grid;
+  grid-template-columns:repeat(var(--cols), minmax(0,1fr));
+  gap:10px;
+}
+.bar{
+  border:1.5px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  min-height:92px;
+  display:flex;flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.bar.empty-bar{background:repeating-linear-gradient(-45deg, #fff, #fff 6px, var(--bg) 6px, var(--bg) 12px)}
+.bar.selected{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.bar-events{
+  display:flex;flex-wrap:nowrap;align-items:stretch;min-height:42px;
+}
+.event{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:8px 4px 2px;min-width:0;flex:1 1 0;
+  border-right:1px dashed transparent;
+}
+.event + .event{border-left:1px dashed color-mix(in srgb, var(--line) 80%, transparent)}
+.event.rest{color:var(--muted);font-weight:700;font-size:calc(1em * var(--chord-size) * 1.05)}
+.event .degree{
+  font-size:calc(1em * var(--degree-size));
+  color:var(--muted);
+  font-weight:650;
+  letter-spacing:.02em;
+  min-height:1.1em;
+  line-height:1.1;
+}
+.event .chord{
+  font-family:var(--chart-font);
+  font-size:calc(1em * var(--chord-size) * 1.15);
+  font-weight:750;
+  line-height:1.15;
+  text-align:center;
+  word-break:break-word;
+}
+.event .chord .q{font-weight:650}
+.event .chord .b{font-weight:600;color:var(--muted);font-size:.92em}
+.lyrics{
+  margin-top:auto;
+  border-top:1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  padding:10px 6px 12px;
+  min-height:calc(2.1em * var(--lyric-size));
+  display:flex;align-items:center;
+  background:linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-soft) 35%, transparent),
+    color-mix(in srgb, var(--accent-soft) 55%, transparent)
+  );
+}
+.lyrics .ly-line{
+  display:flex;width:100%;
+}
+.lyrics .ly-ev{
+  flex:1 1 0;
+  min-width:0;
+  text-align:center;
+  font-family:var(--chart-font);
+  font-size:calc(1em * var(--lyric-size));
+  font-weight:750;
+  line-height:1.3;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  overflow:visible;
+  color:var(--ink);
+}
+.lyrics .ly-ev.blank{visibility:hidden}
+.bar-empty-label{
+  flex:1;display:grid;place-items:center;color:var(--faint);font-size:12px;font-weight:700;letter-spacing:.08em;
+}
+.hit{
+  border:0;background:transparent;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;
+  border-radius:6px;
+}
+body[data-mode="edit"] .event{cursor:pointer}
+body[data-mode="edit"] .event:hover{background:color-mix(in srgb, var(--accent-soft) 55%, transparent)}
+body[data-mode="edit"] .bar:hover{border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+/* stage / preview tweaks */
+body[data-mode="preview"] .hit,
+body[data-mode="stage"] .hit{cursor:default}
+body[data-mode="stage"] .paper{
+  width:min(1100px,100%);
+  box-shadow:none;border:0;background:transparent;
+  padding:8px 4px 24px;
+}
+body[data-mode="stage"] .paper-head{border-bottom-color:color-mix(in srgb, var(--line) 50%, transparent)}
+body[data-mode="stage"] .paper-head h2{font-size:34px}
+body[data-mode="stage"] .section-name{font-size:22px}
+body[data-mode="stage"]{
+  --chord-size:1.05;
+  --lyric-size:1.55;
+  --degree-size:0.85;
+}
+body[data-mode="stage"] .lyrics{background:transparent}
+body[data-mode="stage"] .lyrics .ly-ev{font-size:calc(1em * var(--lyric-size) * 1.05)}
+body[data-mode="stage"] .bar{min-height:110px;background:color-mix(in srgb, var(--paper) 70%, transparent)}
+body[data-mode="stage"] .lyrics{
+  padding:10px 8px 12px;
+  min-height:calc(2em * var(--lyric-size));
+}
+body[data-mode="stage"] .lyrics .ly-ev{
+  font-size:calc(1em * var(--lyric-size) * 1.1);
+  font-weight:800;
+  letter-spacing:.03em;
+}
+body[data-mode="stage"] .event .chord{color:color-mix(in srgb, var(--ink) 88%, transparent)}
+body[data-mode="stage"] .event .degree{opacity:.85}
+/* event sheet */
+.sheet-backdrop{
+  position:fixed;inset:0;background:rgba(28,28,28,.28);
+  display:none;align-items:flex-end;justify-content:center;z-index:40;
+}
+.sheet-backdrop.open{display:flex}
+.sheet{
+  width:min(560px,100%);background:var(--paper);
+  border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.12);
+  padding:16px 16px 24px;
+  display:flex;flex-direction:column;gap:12px;
+  max-height:82vh;overflow:auto;
+}
+.sheet h3{margin:0;font-size:15px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .full{grid-column:1/-1}
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;
+  display:grid;place-items:center;font-size:16px;
+}
+/* toast */
+.toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{
+  background:var(--ink);color:#fff;border-radius:12px;padding:10px 14px;font-size:12.5px;
+  box-shadow:var(--shadow);max-width:320px;animation:in .18s ease;
+}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.storage-banner{
+  background:var(--warn-soft);color:var(--warn);border-bottom:1px solid var(--line);
+  padding:8px 16px;font-size:12px;display:none;
+}
+.storage-banner.show{display:block}
+/* mobile */
+.mobile-tabs{display:none}
+@media (max-width: 980px){
+  .app{grid-template-columns:1fr}
+  .rail{
+    position:fixed;left:0;top:0;bottom:0;width:min(340px, 92vw);
+    transform:translateX(-105%);transition:transform .2s ease;box-shadow:8px 0 30px rgba(0,0,0,.12);
+  }
+  body.rail-open .rail{transform:none}
+  .mobile-tabs{display:flex}
+  .canvas-wrap{padding:12px}
+  .paper{padding:18px 14px 28px;border-radius:14px}
+  .paper-head{flex-direction:column}
+  .paper-head .keys{text-align:left}
+}
+@media (max-width: 640px){
+  .bars{grid-template-columns:repeat(min(var(--cols), 2), minmax(0,1fr))}
+}
+/* print */
+@media print{
+  body{overflow:visible;background:#fff}
+  .rail,.topbar,.sheet-backdrop,.toasts,.storage-banner,.mobile-tabs,.no-print{display:none !important}
+  .app{display:block;height:auto}
+  .canvas-wrap{padding:0;display:block;overflow:visible}
+  .paper{
+    width:100%;border:0;box-shadow:none;border-radius:0;padding:0;
+    min-height:0;
+  }
+  .bar{break-inside:avoid;background:#fff !important;border-color:#999 !important}
+  .section{break-inside:avoid}
+  .lyrics{background:#f4f6f4 !important}
+  .paper-head h2{font-size:22pt}
+  .event .chord{font-size:calc(10.5pt * var(--chord-size))}
+  .event .degree{font-size:calc(8.5pt * var(--degree-size))}
+  .lyrics .ly-ev{font-size:calc(14pt * var(--lyric-size)); color:#000; font-weight:700}
+  .bars{grid-template-columns:repeat(var(--cols-print), minmax(0,1fr))}
+  @page{size:A4;margin:14mm 12mm}
+}
+</style>
+</head>
+<body data-mode="edit">
+<p data-aigc-mark="1" style="margin:0 0 8px;font-size:10px;line-height:1.3;color:#6b6560;font-weight:400;">AI生成</p>
+
+<div class="storage-banner" id="storageBanner">当前环境无法使用 localStorage（可能是 file:// 打开），数据仅保存在内存中。请用本地 HTTP 服务打开，或随时导出 JSON 备份。</div>
+<div class="app">
+  <aside class="rail" id="rail">
+    <div class="brand">
+      <div class="brand-mark">谱</div>
+      <div>
+        <h1>功能谱工作台</h1>
+        <p>Lead Sheet · 歌词优先</p>
+      </div>
+      <button class="icon-btn mobile-tabs no-print" id="railClose" title="关闭侧栏" style="margin-left:auto">×</button>
+    </div>
+    <div class="rail-body">
+      <details class="panel" open id="panelLibrary">
+        <summary>曲库</summary>
+        <div class="panel-body">
+          <input class="search" id="libSearch" placeholder="搜索歌名 / 调 / 调性…" />
+          <div class="lib-tools">
+            <button class="chip active" id="filterAll">全部</button>
+            <button class="chip" id="filterFav">★ 收藏</button>
+            <button class="btn btn-primary" id="btnNew" style="flex:1">新建歌曲</button>
+          </div>
+          <div class="song-list" id="songList"></div>
+        </div>
+      </details>
+
+      <details class="panel" open id="panelSong">
+        <summary>歌曲信息</summary>
+        <div class="panel-body">
+          <div class="field"><label>歌名</label><input id="fTitle" /></div>
+          <div class="field"><label>艺人</label><input id="fArtist" /></div>
+          <div class="row">
+            <div class="field"><label>主音</label>
+              <select id="fTonic"></select>
+            </div>
+            <div class="field"><label>调式</label>
+              <input id="fMode" value="major（大调）" disabled />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label>BPM</label><input id="fBpm" type="number" min="20" max="400" /></div>
+            <div class="field"><label>拍号</label>
+              <select id="fMeter">
+                <option>4/4</option><option>3/4</option><option>6/8</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>风格 / 标签</label><input id="fStyle" placeholder="Pop, Ballad…" /></div>
+          <div class="row">
+            <div class="field"><label>每行小节</label>
+              <select id="fCols"><option>1</option><option>2</option><option selected>4</option><option>8</option></select>
+            </div>
+            <div class="field"><label>歌词字号</label>
+              <select id="fLyricSize">
+                <option value="1.1">标准</option>
+                <option value="1.25">大</option>
+                <option value="1.4" selected>特大</option>
+                <option value="1.6">舞台</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label>和弦字号</label>
+              <select id="fChordSize">
+                <option value="0.85">小</option>
+                <option value="1" selected>中</option>
+                <option value="1.15">大</option>
+              </select>
+            </div>
+            <div class="field"><label>显示行</label>
+              <select id="fLines">
+                <option value="chord">和弦</option>
+                <option value="degree">级数</option>
+                <option value="chord+degree" selected>和弦+级数</option>
+                <option value="chord+degree+roman">全部</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><label>记谱风格</label>
+              <select id="fChordSym">
+                <option value="common" selected>常用</option>
+                <option value="jazz">爵士</option>
+              </select>
+            </div>
+            <div class="field"><label>属七 7</label>
+              <select id="fSeventh">
+                <option value="subscript" selected>下标</option>
+                <option value="plain">并排</option>
+                <option value="superscript">上标</option>
+                <option value="parens">括号</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>备注 / 演奏提示</label>
+            <textarea id="fNotes" style="min-height:64px;font-family:inherit;font-size:13px" placeholder="台下提示、编曲说明…"></textarea>
+          </div>
+          <div class="hint">6/8 中「时值」按八分音符计，不是大拍。级数仅支持大调。</div>
+        </div>
+      </details>
+
+      <details class="panel" id="panelText">
+        <summary>文本批量录入</summary>
+        <div class="panel-body">
+          <div class="field">
+            <label>功能谱文本</label>
+            <textarea id="fParser" spellcheck="false" placeholder="[Intro]
+C:4 | Am:4 | F:2 G:2 | C:4
+
+[Verse]
+C:2 G/B:2 | Am7:4 | F:2 G:2 | 0"></textarea>
+          </div>
+          <div class="hint">
+            <code>[段落]</code> 开段 · <code>|</code> 或换行分小节 · <code>C:4</code> 和弦+拍 ·
+            <code>G/B</code> 斜杠低音 · <code>R:2</code> 休止 · <code>0</code> 空白小节 ·
+            全省略时值自动均分；全写或全不写，不要混用。歌词请在谱面上点按事件编辑。
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnParse">解析</button>
+            <button class="btn btn-primary" id="btnApply">解析并应用</button>
+            <button class="btn" id="btnDump">从当前谱导出文本</button>
+          </div>
+          <div id="parseMsg"></div>
+        </div>
+      </details>
+
+      <details class="panel" id="panelData">
+        <summary>数据 · 导入导出</summary>
+        <div class="panel-body">
+          <div class="btn-row">
+            <button class="btn" id="btnExportSong">导出本曲 JSON</button>
+            <button class="btn" id="btnExportLib">导出曲库 JSON</button>
+            <button class="btn btn-primary" id="btnImport">导入 JSON</button>
+            <button class="btn" id="btnPrint">打印 / 存 PDF</button>
+            <button class="btn btn-danger" id="btnDelete">删除本曲</button>
+          </div>
+          <div class="hint">JSON 含完整结构（和弦、级数算法不入库、歌词、段落），可在多台设备间复用。打印为 A4，歌词在小节下方。</div>
+          <input type="file" id="fileImport" accept="application/json,.json" hidden />
+        </div>
+      </details>
+
+      <details class="panel" id="panelTheme">
+        <summary>主题</summary>
+        <div class="panel-body">
+          <div class="btn-row">
+            <button class="chip active" data-theme-btn="green">护眼绿</button>
+            <button class="chip" data-theme-btn="mono">黑白</button>
+            <button class="chip" data-theme-btn="white">纯白</button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar no-print">
+      <button class="btn mobile-tabs" id="railOpen">曲库</button>
+      <div class="modes" id="modes">
+        <button data-mode-btn="edit" class="active">编辑</button>
+        <button data-mode-btn="preview">预览</button>
+        <button data-mode-btn="stage">演出</button>
+      </div>
+      <div class="top-title">
+        <strong id="topTitle">未命名</strong>
+        <span id="topSub">功能谱 · 歌词优先</span>
+      </div>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">就绪</span>
+        <button class="btn btn-ghost" id="btnUndo" title="撤销">撤销</button>
+        <button class="btn btn-ghost" id="btnRedo" title="重做">重做</button>
+        <button class="btn" id="btnFind">找谱</button>
+        <button class="btn" id="btnAddSection">+ 段落</button>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <article class="paper" id="paper"></article>
+    </div>
+  </main>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* =========================================================
+   功能谱工作台 — 单文件应用
+   数据模型兼容 chord-chart-workbench schemaVersion=2 精神
+   ========================================================= */
+(function () {
+"use strict";
+
+/* ---------- constants ---------- */
+const LETTERS = ["C","D","E","F","G","A","B"];
+const WHITE_SEMI = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+const MAJOR_STEPS = [0,2,4,5,7,9,11];
+const TONICS = [
+  "C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B"
+];
+const QUALITIES = {
+  maj:  { id:"maj",  label:"大三",     common:"",     jazz:"",     romanUpper:true,  romanSuffixCommon:"", romanSuffixJazz:"" },
+  m:    { id:"m",    label:"小三",     common:"m",    jazz:"-",    romanUpper:false, romanSuffixCommon:"", romanSuffixJazz:"" },
+  "7":  { id:"7",    label:"属七",     common:"7",    jazz:"7",    romanUpper:true,  romanSuffixCommon:"7", romanSuffixJazz:"7", seventh:true },
+  maj7: { id:"maj7", label:"大七",     common:"maj7", jazz:"Δ7",   romanUpper:true,  romanSuffixCommon:"maj7", romanSuffixJazz:"Δ7" },
+  m7:   { id:"m7",   label:"小七",     common:"m7",   jazz:"-7",   romanUpper:false, romanSuffixCommon:"m7", romanSuffixJazz:"-7" },
+  sus2: { id:"sus2", label:"挂二",     common:"sus2", jazz:"sus2", romanUpper:true,  romanSuffixCommon:"sus2", romanSuffixJazz:"sus2" },
+  sus4: { id:"sus4", label:"挂四",     common:"sus4", jazz:"sus4", romanUpper:true,  romanSuffixCommon:"sus4", romanSuffixJazz:"sus4" },
+  dim:  { id:"dim",  label:"减三",     common:"dim",  jazz:"°",    romanUpper:false, romanSuffixCommon:"dim", romanSuffixJazz:"°" },
+  aug:  { id:"aug",  label:"增三",     common:"aug",  jazz:"+",    romanUpper:true,  romanSuffixCommon:"aug", romanSuffixJazz:"+" },
+};
+const QUALITY_ORDER = ["maj","m","7","maj7","m7","sus2","sus4","dim","aug"];
+const CHORD_ALIASES = {
+  "":"maj", "M":"maj", "maj":"maj", "Δ":"maj", "△":"maj",
+  "m":"m", "min":"m", "-":"m",
+  "7":"7", "dom7":"7",
+  "maj7":"maj7", "M7":"maj7", "Δ7":"maj7", "△7":"maj7", "Ma7":"maj7", "Maj7":"maj7",
+  "m7":"m7", "min7":"m7", "-7":"m7",
+  "sus2":"sus2", "sus":"sus4", "sus4":"sus4",
+  "dim":"dim", "o":"dim", "°":"dim", "dim.":"dim",
+  "aug":"aug", "+":"aug",
+};
+const REST_TEXT = { cn:"休止", dash:"—", R:"R" };
+const ACCIDENTAL_GLYPHS = { glyph:{ "#":"♯", "b":"♭" }, ascii:{ "#":"#", "b":"b" } };
+
+/* ---------- ids ---------- */
+function rid(prefix) {
+  const s = Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+  return prefix + s;
+}
+function uidAll(song) {
+  const seen = new Set();
+  const walk = (id) => {
+    if (!id || typeof id !== "string") return rid("id_");
+    if (seen.has(id)) return rid("dup_");
+    seen.add(id);
+    return id;
+  };
+  song.id = walk(song.id);
+  song.sections.forEach((sec) => {
+    sec.id = walk(sec.id);
+    sec.bars.forEach((bar) => {
+      bar.id = walk(bar.id);
+      (bar.events || []).forEach((ev) => { ev.id = walk(ev.id); });
+    });
+  });
+}
+
+/* ---------- chord parse / format ---------- */
+function parseNote(str) {
+  if (!str) return null;
+  let s = String(str).trim();
+  s = s.replace(/♯/g, "#").replace(/♭/g, "b").replace(/♯/g, "#");
+  const m = /^([A-Ga-g])([#b]{0,2})$/.exec(s);
+  if (!m) return null;
+  return { letter: m[1].toUpperCase(), acc: accToInt(m[2]) };
+}
+function accToInt(a) {
+  let n = 0;
+  for (const ch of a) n += ch === "#" ? 1 : -1;
+  return n;
+}
+function intToAcc(n, style="glyph") {
+  if (n === 0) return "";
+  const glyphs = ACCIDENTAL_GLYPHS[style] || ACCIDENTAL_GLYPHS.glyph;
+  if (n > 0) return (glyphs["#"] || "#").repeat(n);
+  return (glyphs["b"] || "b").repeat(-n);
+}
+function parseChordToken(token) {
+  const t = String(token).trim();
+  if (!t) return { ok:false, error:"空和弦" };
+  if (t === "0") return { ok:true, empty:true };
+  if (/^R$/i.test(t)) return { ok:true, rest:true, beats:null };
+  const m = /^([A-Ga-g][#b♯♭]{0,2})([^/]*)(?:\/([A-Ga-g][#b♯♭]{0,2}))?$/.exec(t);
+  if (!m) return { ok:false, error:`无法识别和弦「${t}」` };
+  const root = parseNote(m[1]);
+  if (!root) return { ok:false, error:`根音非法「${m[1]}」` };
+  const qRaw = m[2].trim();
+  if (qRaw && !(qRaw in CHORD_ALIASES)) {
+    return {
+      ok:false,
+      error:`和弦性质「${qRaw}」超出乐理范围（仅 maj/m/7/maj7/m7/sus2/sus4/dim/aug）`
+    };
+  }
+  const quality = CHORD_ALIASES[qRaw] || "maj";
+  let bass = null;
+  if (m[3]) {
+    bass = parseNote(m[3]);
+    if (!bass) return { ok:false, error:`低音非法「${m[3]}」` };
+  }
+  return {
+    ok:true,
+    chord:{
+      root: root.letter + accToken(root.acc),
+      quality,
+      bass: bass ? bass.letter + accToken(bass.acc) : null
+    }
+  };
+}
+function accToken(n) {
+  return n > 0 ? "#".repeat(n) : n < 0 ? "b".repeat(-n) : "";
+}
+function splitRoot(str) {
+  const n = parseNote(str);
+  return n ? { letter:n.letter, acc:n.acc } : null;
+}
+function formatChord(chord, opts={}) {
+  const style = opts.accidentalGlyphs || "glyph";
+  const sym = opts.chordSymbols || "common";
+  const seventh = opts.seventhSuffix || "subscript";
+  const q = QUALITIES[chord.quality] || QUALITIES.maj;
+  const suffix = sym === "jazz" ? q.jazz : q.common;
+  const root = formatNote(chord.root, style);
+  let main = root;
+  // seventh suffix handling for quality 7 (and visually for others keep as suffix text)
+  if (q.seventh && (seventh === "subscript" || seventh === "superscript" || seventh === "parens")) {
+    // represent in parts later; here string form uses plain-ish
+    if (seventh === "parens") main = root + "(7)";
+    else main = root + "7";
+  } else {
+    main = root + suffix;
+  }
+  if (chord.bass) main += "/" + formatNote(chord.bass, style);
+  return main;
+}
+function formatChordParts(chord, opts={}) {
+  // returns [{text, role}] left-to-right for correct placement with slash bass
+  const style = opts.accidentalGlyphs || "glyph";
+  const sym = opts.chordSymbols || "common";
+  const seventhMode = opts.seventhSuffix || "subscript";
+  const q = QUALITIES[chord.quality] || QUALITIES.maj;
+  const parts = [];
+  parts.push({ text: formatNote(chord.root, style), role: "root" });
+  if (q.seventh && seventhMode !== "plain") {
+    // remove plain suffix digits from common and add 7 specially
+    const rest = (sym === "jazz" ? q.jazz : q.common).replace(/7$/, "");
+    if (rest) parts.push({ text: rest, role: "q" });
+    if (seventhMode === "parens") parts.push({ text: "(7)", role: "seven" });
+    else parts.push({ text: "7", role: "seven", mode: seventhMode });
+  } else {
+    const suffix = sym === "jazz" ? q.jazz : q.common;
+    if (suffix) parts.push({ text: suffix, role: "q" });
+  }
+  if (chord.bass) {
+    parts.push({ text: "/", role: "slash" });
+    parts.push({ text: formatNote(chord.bass, style), role: "bass" });
+  }
+  return parts;
+}
+function formatNote(noteStr, style="glyph") {
+  const n = splitRoot(noteStr);
+  if (!n) return String(noteStr || "");
+  return n.letter + intToAcc(n.acc, style);
+}
+
+/* ---------- degrees (major only) ---------- */
+function degreeOf(noteStr, tonicStr) {
+  const r = splitRoot(noteStr);
+  const t = splitRoot(tonicStr);
+  if (!r || !t) return null;
+  const tL = LETTERS.indexOf(t.letter);
+  const rL = LETTERS.indexOf(r.letter);
+  if (tL < 0 || rL < 0) return null;
+  const letterDist = (rL - tL + 7) % 7;
+  const degree = letterDist + 1;
+  const tSemi = WHITE_SEMI[t.letter] + t.acc;
+  const rSemi = WHITE_SEMI[r.letter] + r.acc;
+  const expected = tSemi + MAJOR_STEPS[letterDist];
+  // 半音差归一到 (-6, 6]，避免跨八度差出 ±12 变成一串升降号
+  let acc = rSemi - expected;
+  acc = ((acc % 12) + 12) % 12;
+  if (acc > 6) acc -= 12;
+  return { degree, acc };
+}
+function formatDegreeNum(deg, opts={}) {
+  if (!deg) return "";
+  const style = opts.accidentalGlyphs || "glyph";
+  const acc = intToAcc(deg.acc, style);
+  return acc + String(deg.degree);
+}
+function formatDegreeRoman(deg, qualityId, opts={}) {
+  if (!deg) return "";
+  const style = opts.accidentalGlyphs || "glyph";
+  const q = QUALITIES[qualityId] || QUALITIES.maj;
+  const acc = intToAcc(deg.acc, style);
+  const ROMAN = ["I","II","III","IV","V","VI","VII"];
+  let body = ROMAN[deg.degree - 1];
+  if (!q.romanUpper) body = body.toLowerCase();
+  let suffix = opts.chordSymbols === "jazz" ? q.romanSuffixJazz : q.romanSuffixCommon;
+  // dim suffix preference for roman/number
+  if (q.id === "dim") {
+    suffix = (opts.dimSuffix === "°" || opts.chordSymbols === "jazz") ? "°" : "dim";
+  }
+  // m absorbed by case
+  if (q.id === "m") suffix = "";
+  return acc + body + suffix;
+}
+function formatDegreeFull(token, tonic, opts={}) {
+  // token = chord object or rest/empty
+  if (!token || token.empty) return "";
+  if (token.rest) return opts.restText === "R" ? "R" : (opts.restText === "dash" ? "—" : "休止");
+  const chord = token;
+  const d = degreeOf(chord.root, tonic);
+  if (!d) return "";
+  const num = formatDegreeNum(d, opts);
+  const rom = formatDegreeRoman(d, chord.quality, opts);
+  return num; // primary number; roman separate
+}
+function formatRoman(token, tonic, opts={}) {
+  if (!token || token.empty || token.rest) return "";
+  const d = degreeOf(token.root, tonic);
+  return formatDegreeRoman(d, token.quality, opts);
+}
+
+/* ---------- duration ---------- */
+function meterBeats(meter) {
+  const [n, d] = String(meter || "4/4").split("/").map(Number);
+  return Number.isFinite(n) ? n : 4;
+}
+const EPS = 1e-9;
+function nearly(a, b) { return Math.abs(a - b) < EPS; }
+function barLengthError(bar, meter) {
+  if (!bar || bar.type === "empty") return null;
+  const need = meterBeats(meter);
+  const evs = bar.events || [];
+  if (!evs.length) return `小节无事件，应占满 ${need} 拍`;
+  const sum = evs.reduce((s, e) => s + (Number(e.beats) || 0), 0);
+  if (!nearly(sum, need)) return `小节时值合计 ${round4(sum)}，应为 ${need}`;
+  return null;
+}
+function round4(n) { return Math.round(n * 1e4) / 1e4; }
+
+/* ---------- song model ---------- */
+function createSong(partial={}) {
+  const now = new Date().toISOString();
+  const song = {
+    schemaVersion: 2,
+    id: partial.id || rid("sng_"),
+    createdAt: partial.createdAt || now,
+    updatedAt: partial.updatedAt || now,
+    title: partial.title || "未命名",
+    artist: partial.artist || "",
+    notes: partial.notes || "",
+    key: partial.key || { tonic: "C", mode: "major" },
+    bpm: partial.bpm || 96,
+    timeSignature: partial.timeSignature || "4/4",
+    style: partial.style || "",
+    layout: Object.assign({
+      barsPerRow: 4,
+      displayLines: ["chord", "degree"],
+      dimSuffix: "dim",
+      chordSymbols: "common",
+      accidentalGlyphs: "glyph",
+      seventhSuffix: "subscript",
+      restText: "cn",
+      textBlockMode: "bar",
+      fontScale: 1,
+      lyricSize: 1.4,
+      chordSize: 1,
+    }, partial.layout || {}),
+    sections: partial.sections && partial.sections.length ? partial.sections : [
+      { id: rid("sec_"), name: "Intro", repeat: 1, cue: "", bars: [createBar()] }
+    ],
+  };
+  // normalize events
+  song.sections.forEach(sec => {
+    sec.id = sec.id || rid("sec_");
+    sec.bars = (sec.bars || []).map(b => normalizeBar(b));
+  });
+  uidAll(song);
+  return song;
+}
+function createBar(type="empty") {
+  return { id: rid("bar_"), type, lyrics: null, events: [] };
+}
+function createEvent(kind, beats=1, chord=null) {
+  const ev = { id: rid("evt_"), kind, beats: Number(beats) || 1 };
+  if (kind === "chord") ev.chord = chord;
+  return ev;
+}
+function normalizeBar(bar) {
+  const b = {
+    id: bar.id || rid("bar_"),
+    type: bar.type === "chords" ? "chords" : (bar.type === "empty" ? "empty" : (bar.events && bar.events.length ? "chords" : "empty")),
+    lyrics: Array.isArray(bar.lyrics) ? bar.lyrics.map(x => (x && typeof x === "object" ? x.text : x)) : null,
+    events: (bar.events || []).map(e => {
+      if (e.kind === "rest" || (!e.chord && e.kind !== "chord")) {
+        return { id: e.id || rid("evt_"), kind: "rest", beats: Number(e.beats) || 1 };
+      }
+      return {
+        id: e.id || rid("evt_"),
+        kind: "chord",
+        beats: Number(e.beats) || 1,
+        chord: e.chord
+      };
+    }),
+  };
+  if (b.lyrics && b.lyrics.every(x => x == null || String(x).trim() === "")) b.lyrics = null;
+  return b;
+}
+function validateSong(song) {
+  const errs = [];
+  if (!song || typeof song !== "object") return ["不是对象"];
+  if (!song.id) errs.push("缺少 id");
+  if (!Array.isArray(song.sections)) errs.push("sections 必须是数组");
+  const ids = new Set();
+  const grab = (id, tag) => {
+    if (!id) { errs.push(`${tag} 缺少 id`); return; }
+    if (ids.has(id)) errs.push(`${tag} id 重复: ${id}`);
+    ids.add(id);
+  };
+  grab(song.id, "song");
+  (song.sections || []).forEach((sec, si) => {
+    grab(sec.id, `section[${si}]`);
+    if (!sec.name) errs.push(`section[${si}] 缺少名称`);
+    (sec.bars || []).forEach((bar, bi) => {
+      grab(bar.id, `bar[${si}.${bi}]`);
+      if (bar.type === "chords") {
+        (bar.events || []).forEach((ev, ei) => {
+          grab(ev.id, `event[${si}.${bi}.${ei}]`);
+          if (!nearly(sumBeats(bar.events), meterBeats(song.timeSignature))) {
+            // checked below once
+          }
+        });
+        const err = barLengthError(bar, song.timeSignature);
+        if (err) errs.push(`${sec.name} 第${bi+1}小节: ${err}`);
+      }
+      if (bar.lyrics && bar.events && bar.lyrics.length > bar.events.length) {
+        errs.push(`${sec.name} 第${bi+1}小节: 歌词多于事件`);
+      }
+    });
+  });
+  return errs;
+}
+function sumBeats(events) { return (events||[]).reduce((s,e)=>s+(Number(e.beats)||0),0); }
+
+/* ---------- text parser ---------- */
+function parseChartText(text, timeSignature="4/4") {
+  const need = meterBeats(timeSignature);
+  const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+  const sections = [];
+  let cur = null;
+  const errors = [];
+  let sawHeader = false;
+
+  const pushErr = (msg, lineNo) => errors.push(lineNo ? `第 ${lineNo} 行：${msg}` : msg);
+
+  lines.forEach((raw, idx) => {
+    const lineNo = idx + 1;
+    const line = raw.trim();
+    if (!line) return;
+    if (line.startsWith("[")) {
+      const m = /^\[([^\]]*)\]\s*$/.exec(line);
+      if (!m) return pushErr("段落标题格式应为 [名称]", lineNo);
+      const name = m[1].trim();
+      if (!name) return pushErr("段落名不能为空", lineNo);
+      sawHeader = true;
+      cur = { id: rid("sec_"), name, repeat: 1, cue: "", bars: [] };
+      sections.push(cur);
+      return;
+    }
+    if (!sawHeader) return pushErr("第一个段落 [名称] 之前不能有和弦内容", lineNo);
+    if (!cur) return pushErr("段落状态丢失", lineNo);
+    if (/\|\s*\|/.test(line.replace(/\|\s*$/, ""))) return pushErr("不能出现空小节分隔 ||", lineNo);
+
+    // strip trailing |
+    let body = line.replace(/\|\s*$/, "").trim();
+    // split bars by | but newline already one row = one or more bars separated by |
+    // A row may contain multiple bars. Also treat the whole row as bar sequence.
+    const cells = body.split("|").map(s => s.trim());
+    if (cells.some(c => c === "")) return pushErr("存在空小节分隔 || 或首尾多余 | 导致空格", lineNo);
+
+    for (let ci = 0; ci < cells.length; ci++) {
+      const cell = cells[ci];
+      const barNo = cur.bars.length + 1;
+      if (cell === "0") {
+        cur.bars.push(createBar("empty"));
+        continue;
+      }
+      const tokens = cell.split(/\s+/).filter(Boolean);
+      if (!tokens.length) return pushErr("空小节请写 0", lineNo);
+
+      // parse tokens into events with optional :beats
+      const parsed = [];
+      let mode = null; // 'all' | 'none' | 'mixed'
+      for (const tok of tokens) {
+        if (tok.includes(":")) {
+          const [left, right] = tok.split(":");
+          const beats = Number(right);
+          if (!Number.isFinite(beats) || beats <= 0) return pushErr(`时值非法「${tok}」`, lineNo);
+          const kindTok = left === "R" || left === "r" ? { ok:true, rest:true } : parseChordToken(left);
+          if (!kindTok.ok) return pushErr(kindTok.error, lineNo);
+          if (kindTok.empty) return pushErr("0 只能单独占一整个小节", lineNo);
+          if (kindTok.rest) parsed.push({ kind:"rest", beats });
+          else parsed.push({ kind:"chord", beats, chord: kindTok.chord });
+          mode = mode === "none" ? "mixed" : "all";
+        } else {
+          const kindTok = tok === "R" || tok === "r" ? { ok:true, rest:true, beats:null } : parseChordToken(tok);
+          if (!kindTok.ok) return pushErr(kindTok.error, lineNo);
+          if (kindTok.empty) return pushErr("0 只能单独占一整个小节", lineNo);
+          parsed.push({ kind: kindTok.rest ? "rest" : "chord", beats: null, chord: kindTok.chord });
+          mode = mode === "all" ? "mixed" : "none";
+        }
+      }
+      if (mode === "mixed") return pushErr("时值不能混用（全写 :拍 或全不写）", lineNo);
+
+      if (mode === "none") {
+        // equal split
+        const n = parsed.length;
+        const exact = (need * 16) % (n * 16) === 0 ? null : null;
+        // require need/n expressible in sixteenths? use 1/16 grid
+        const unit = need / n;
+        if (Math.abs(unit * 16 - Math.round(unit * 16)) > EPS) {
+          return pushErr(`${n} 个事件无法把 ${need} 拍精确均分（请写明时值）`, lineNo);
+        }
+        parsed.forEach(p => { p.beats = unit; });
+      } else {
+        const sum = parsed.reduce((s,p)=>s+p.beats,0);
+        if (!nearly(sum, need)) return pushErr(`小节时值合计 ${round4(sum)}，应为 ${need}`, lineNo);
+      }
+
+      const bar = createBar("chords");
+      bar.events = parsed.map(p => createEvent(p.kind, p.beats, p.chord || null));
+      cur.bars.push(bar);
+    }
+  });
+
+  if (!sections.length && !errors.length) errors.push("没有解析到任何段落");
+  return { sections, errors };
+}
+function dumpChartText(song) {
+  const out = [];
+  for (const sec of song.sections) {
+    out.push(`[${sec.name}]`);
+    const lines = [];
+    for (const bar of sec.bars) {
+      if (bar.type === "empty" || !bar.events.length) { lines.push("0"); continue; }
+      const toks = bar.events.map(ev => {
+        if (ev.kind === "rest") return `R:${round4(ev.beats)}`;
+        return `${formatChord(ev.chord, { ...song.layout, accidentalGlyphs:"ascii", chordSymbols:"common", seventhSuffix:"plain" })}:${round4(ev.beats)}`;
+      });
+      lines.push(toks.join(" "));
+    }
+    out.push(lines.join(" | "));
+    out.push("");
+  }
+  return out.join("\n").trim() + "\n";
+}
+
+/* ---------- library / project ---------- */
+const LIB_KEY = "chord-chart-workbench/v1/library";
+const PREF_KEY = "chord-chart-workbench/v1/prefs";
+let memoryOnly = false;
+let memoryLib = { schemaVersion: 2, favorites: [], songs: [] };
+let memoryPrefs = { theme: "green" };
+
+function storageGet(key) {
+  try {
+    if (memoryOnly) return null;
+    return localStorage.getItem(key);
+  } catch (e) {
+    memoryOnly = true;
+    showStorageBanner();
+    return null;
+  }
+}
+function storageSet(key, val) {
+  try {
+    if (memoryOnly) return false;
+    localStorage.setItem(key, val);
+    return true;
+  } catch (e) {
+    memoryOnly = true;
+    showStorageBanner();
+    return false;
+  }
+}
+function showStorageBanner() {
+  const el = document.getElementById("storageBanner");
+  if (el) el.classList.add("show");
+}
+function loadLibrary() {
+  const raw = storageGet(LIB_KEY);
+  if (!raw) {
+    if (memoryOnly) return memoryLib;
+    return { schemaVersion: 2, favorites: [], songs: [] };
+  }
+  try {
+    const data = JSON.parse(raw);
+    return normalizeLibrary(data);
+  } catch (e) {
+    return { schemaVersion: 2, favorites: [], songs: [], corrupted: true };
+  }
+}
+function normalizeLibrary(data) {
+  const fixed = (data.songs || []).map(raw => {
+    const song = {
+      schemaVersion: 2,
+      id: raw.id || rid("sng_"),
+      createdAt: raw.createdAt || new Date().toISOString(),
+      updatedAt: raw.updatedAt || new Date().toISOString(),
+      title: raw.title || "未命名",
+      artist: raw.artist || "",
+      notes: raw.notes || "",
+      key: { tonic: (raw.key && raw.key.tonic) || "C", mode: "major" },
+      bpm: raw.bpm || 96,
+      timeSignature: raw.timeSignature || "4/4",
+      style: raw.style || "",
+      layout: Object.assign({
+        barsPerRow: 4,
+        displayLines: ["chord", "degree"],
+        dimSuffix: "dim",
+        chordSymbols: "common",
+        accidentalGlyphs: "glyph",
+        seventhSuffix: "subscript",
+        restText: "cn",
+        textBlockMode: "bar",
+        fontScale: 1,
+        lyricSize: 1.4,
+        chordSize: 1,
+      }, raw.layout || {}),
+      sections: (raw.sections || []).map(sec => ({
+        id: sec.id || rid("sec_"),
+        name: sec.name || "Section",
+        repeat: sec.repeat || 1,
+        cue: sec.cue || "",
+        bars: (sec.bars || []).map(normalizeBar),
+      })),
+    };
+    if (!song.sections.length) song.sections.push({ id: rid("sec_"), name: "A", repeat: 1, cue: "", bars: [createBar("empty")] });
+    uidAll(song);
+    return song;
+  });
+  return {
+    schemaVersion: 2,
+    favorites: Array.isArray(data.favorites) ? data.favorites.slice() : [],
+    songs: fixed,
+    corrupted: !!data.corrupted,
+  };
+}
+function saveLibrary(lib) {
+  memoryLib = lib;
+  const ok = storageSet(LIB_KEY, JSON.stringify({
+    schemaVersion: 2,
+    favorites: lib.favorites || [],
+    songs: lib.songs || [],
+  }));
+  return ok;
+}
+function loadPrefs() {
+  const raw = storageGet(PREF_KEY);
+  if (!raw) return memoryPrefs;
+  try {
+    return Object.assign({ theme: "green" }, JSON.parse(raw));
+  } catch { return { theme: "green" }; }
+}
+function savePrefs(prefs) {
+  memoryPrefs = prefs;
+  storageSet(PREF_KEY, JSON.stringify(prefs));
+}
+
+/* ---------- history ---------- */
+const history = {
+  stack: [],
+  idx: -1,
+  limit: 80,
+  reset(song) {
+    this.stack = [JSON.stringify(song)];
+    this.idx = 0;
+  },
+  push(song) {
+    const s = JSON.stringify(song);
+    if (this.stack[this.idx] === s) return;
+    this.stack = this.stack.slice(0, this.idx + 1);
+    this.stack.push(s);
+    if (this.stack.length > this.limit) this.stack.shift();
+    this.idx = this.stack.length - 1;
+  },
+  undo() { return this.idx > 0 ? JSON.parse(this.stack[--this.idx]) : null; },
+  redo() { return this.idx < this.stack.length - 1 ? JSON.parse(this.stack[++this.idx]) : null; },
+};
+
+/* ---------- store ---------- */
+const state = {
+  lib: null,
+  song: null,
+  songId: null,
+  mode: "edit",
+  theme: "green",
+  filterFav: false,
+  search: "",
+  selected: null, // {type:'event'|'bar'|'section', ids...}
+  status: "就绪",
+  dirty: false,
+};
+function commit(mutator, opts={}) {
+  const draft = JSON.parse(JSON.stringify(state.song));
+  mutator(draft);
+  draft.updatedAt = new Date().toISOString();
+  state.song = draft;
+  history.push(state.song);
+  persistCurrent();
+  renderAll();
+}
+function persistCurrent() {
+  const idx = state.lib.songs.findIndex(s => s.id === state.song.id);
+  const snap = JSON.parse(JSON.stringify(state.song));
+  if (idx >= 0) state.lib.songs[idx] = snap;
+  else state.lib.songs.unshift(snap);
+  saveLibrary(state.lib);
+  state.dirty = false;
+  setStatus("已自动保存");
+}
+function setStatus(text, warn=false) {
+  state.status = text;
+  const t = document.getElementById("statusText");
+  const d = document.getElementById("statusDot");
+  if (t) t.textContent = text;
+  if (d) d.classList.toggle("warn", !!warn);
+}
+function toast(msg) {
+  const box = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+/* ---------- chart render helpers ---------- */
+function layoutOpts(song) {
+  const L = song.layout || {};
+  return {
+    accidentalGlyphs: L.accidentalGlyphs || "glyph",
+    chordSymbols: L.chordSymbols || "common",
+    seventhSuffix: L.seventhSuffix || "subscript",
+    restText: L.restText || "cn",
+    dimSuffix: L.dimSuffix || "dim",
+    displayLines: Array.isArray(L.displayLines) && L.displayLines.length ? L.displayLines : ["chord"],
+  };
+}
+function renderEvent(ev, bar, song, idx) {
+  const opts = layoutOpts(song);
+  const tonic = song.key.tonic;
+  const showChord = opts.displayLines.includes("chord");
+  const showDeg = opts.displayLines.includes("degree");
+  const showRom = opts.displayLines.includes("roman");
+
+  const wrap = document.createElement("div");
+  wrap.className = "event" + (ev.kind === "rest" ? " rest" : "");
+  wrap.dataset.eventId = ev.id;
+  wrap.dataset.barId = bar.id;
+  wrap.style.flexGrow = String(Math.max(0.5, Number(ev.beats) || 1));
+
+  const btn = document.createElement("button");
+  btn.className = "hit";
+  btn.type = "button";
+  btn.style.width = "100%";
+  btn.style.display = "flex";
+  btn.style.flexDirection = "column";
+  btn.style.alignItems = "center";
+  btn.style.gap = "2px";
+
+  if (showDeg || showRom) {
+    const d = document.createElement("div");
+    d.className = "degree";
+    let dt = "";
+    if (ev.kind === "rest") dt = "";
+    else if (showDeg && showRom) dt = formatDegreeNum(degreeOf(ev.chord.root, tonic), opts) + " · " + formatRoman(ev, tonic, opts);
+    else if (showDeg) dt = formatDegreeFull(ev, tonic, opts);
+    else dt = formatRoman(ev, tonic, opts);
+    d.textContent = dt;
+    btn.appendChild(d);
+  }
+
+  const c = document.createElement("div");
+  c.className = "chord";
+  if (ev.kind === "rest") {
+    c.textContent = REST_TEXT[opts.restText] || "休止";
+  } else {
+    const parts = formatChordParts(ev.chord, opts);
+    parts.forEach(p => {
+      const span = document.createElement("span");
+      if (p.role === "seven" && (p.mode === "subscript" || p.mode === "superscript")) {
+        span.textContent = p.text;
+        span.style.fontSize = "0.72em";
+        span.style.verticalAlign = p.mode === "subscript" ? "sub" : "super";
+        span.style.fontWeight = "700";
+      } else if (p.role === "q") {
+        span.className = "q";
+        span.textContent = p.text;
+      } else if (p.role === "bass" || p.role === "slash") {
+        span.className = "b";
+        span.textContent = p.text;
+      } else {
+        span.textContent = p.text;
+      }
+      c.appendChild(span);
+    });
+  }
+  btn.appendChild(c);
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (state.mode !== "edit") return;
+    openEventSheet(bar.id, ev.id, idx);
+  });
+  wrap.appendChild(btn);
+
+  // lyrics row rendered at bar level
+  return wrap;
+}
+function renderBar(bar, sec, song) {
+  const el = document.createElement("div");
+  el.className = "bar" + (bar.type === "empty" ? " empty-bar" : "");
+  el.dataset.barId = bar.id;
+  if (bar.type === "empty") {
+    el.innerHTML = '<div class="bar-empty-label">0</div>';
+    if (state.mode === "edit") {
+      el.style.cursor = "pointer";
+      el.title = "空白小节，点击编辑";
+      el.addEventListener("click", () => openBarSheet(sec.id, bar.id));
+    }
+    return el;
+  }
+  const evs = document.createElement("div");
+  evs.className = "bar-events";
+  (bar.events || []).forEach((ev, i) => {
+    evs.appendChild(renderEvent(ev, bar, song, i));
+  });
+  el.appendChild(evs);
+
+  // lyrics — the hero line
+  const ly = document.createElement("div");
+  ly.className = "lyrics";
+  ly.title = "歌词栏 · 点小节可批量填词";
+  const line = document.createElement("div");
+  line.className = "ly-line";
+  const lyrics = bar.lyrics || [];
+  (bar.events || []).forEach((ev, i) => {
+    const cell = document.createElement("div");
+    cell.className = "ly-ev";
+    const text = lyrics[i] != null ? String(lyrics[i]) : "";
+    cell.textContent = text;
+    if (!text) cell.classList.add("blank");
+    cell.style.flexGrow = String(Math.max(0.5, Number(ev.beats) || 1));
+    line.appendChild(cell);
+  });
+  ly.appendChild(line);
+  el.appendChild(ly);
+
+  if (state.mode === "edit") {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", (e) => {
+      if (e.target.closest(".event")) return;
+      openBarSheet(sec.id, bar.id);
+    });
+  }
+  return el;
+}
+function renderSection(sec, song) {
+  const el = document.createElement("section");
+  el.className = "section";
+  const head = document.createElement("div");
+  head.className = "section-head";
+  const name = document.createElement("div");
+  name.className = "section-name";
+  name.textContent = sec.name;
+  head.appendChild(name);
+  if (sec.repeat && sec.repeat > 1) {
+    const r = document.createElement("div");
+    r.className = "section-meta";
+    r.textContent = `×${sec.repeat}（标注）`;
+    head.appendChild(r);
+  }
+  if (sec.cue) {
+    const cue = document.createElement("div");
+    cue.className = "section-cue";
+    cue.textContent = sec.cue;
+    head.appendChild(cue);
+  }
+  if (state.mode === "edit") {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-ghost no-print";
+    btn.textContent = "段落 / 填词";
+    btn.style.marginLeft = "auto";
+    btn.addEventListener("click", () => openSectionSheet(sec.id));
+    head.appendChild(btn);
+  }
+  el.appendChild(head);
+
+  const bars = document.createElement("div");
+  bars.className = "bars";
+  const cols = Math.min(song.layout.barsPerRow || 4, 8);
+  bars.style.setProperty("--cols", String(cols));
+  sec.bars.forEach(b => bars.appendChild(renderBar(b, sec, song)));
+  el.appendChild(bars);
+  return el;
+}
+function renderPaper() {
+  const root = document.getElementById("paper");
+  root.innerHTML = "";
+  const song = state.song;
+  if (!song) return;
+
+  document.documentElement.style.setProperty("--lyric-size", String(song.layout.lyricSize || 1.4));
+  document.documentElement.style.setProperty("--chord-size", String(song.layout.chordSize || 1));
+  document.documentElement.style.setProperty("--degree-size", String(0.82 * (song.layout.fontScale || 1)));
+  document.documentElement.style.setProperty("--cols", String(song.layout.barsPerRow || 4));
+  document.documentElement.style.setProperty("--cols-print", String(song.layout.barsPerRow || 4));
+
+  const head = document.createElement("header");
+  head.className = "paper-head";
+  const left = document.createElement("div");
+  const h = document.createElement("h2");
+  h.textContent = song.title || "未命名";
+  const sub = document.createElement("div");
+  sub.className = "sub";
+  sub.textContent = [song.artist, song.style].filter(Boolean).join(" · ");
+  left.appendChild(h); left.appendChild(sub);
+  const right = document.createElement("div");
+  right.className = "keys";
+  const degNote = song.key.mode === "major" ? "" : "级数不可用";
+  right.innerHTML = "";
+  const b1 = document.createElement("div");
+  b1.innerHTML = `调 <b>${escapeHtml(formatNote(song.key.tonic, song.layout.accidentalGlyphs || "glyph"))} 大调</b>`;
+  const b2 = document.createElement("div");
+  b2.textContent = `BPM ${song.bpm || "—"} · ${song.timeSignature}`;
+  if (song.timeSignature === "6/8") {
+    const b22 = document.createElement("div");
+    b22.textContent = "时值按八分音符";
+    right.appendChild(b1); right.appendChild(b2); right.appendChild(b22);
+  } else {
+    right.appendChild(b1); right.appendChild(b2);
+  }
+  head.appendChild(left); head.appendChild(right);
+  root.appendChild(head);
+
+  if (song.notes && String(song.notes).trim()) {
+    const nb = document.createElement("div");
+    nb.className = "notes-block";
+    nb.textContent = song.notes;
+    root.appendChild(nb);
+  }
+
+  if (song.key.mode !== "major") {
+    const w = document.createElement("div");
+    w.className = "warn no-print";
+    w.textContent = "级数不可用：当前仅支持大调。";
+    root.appendChild(w);
+  }
+
+  song.sections.forEach(sec => root.appendChild(renderSection(sec, song)));
+
+  if (state.mode === "edit") {
+    const add = document.createElement("div");
+    add.className = "no-print";
+    add.style.marginTop = "18px";
+    add.style.display = "flex";
+    add.style.gap = "8px";
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.textContent = "+ 添加段落";
+    btn.addEventListener("click", addSection);
+    add.appendChild(btn);
+    root.appendChild(add);
+  }
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+/* ---------- library UI ---------- */
+function renderLibrary() {
+  const list = document.getElementById("songList");
+  list.innerHTML = "";
+  const q = (state.search || "").trim().toLowerCase();
+  let songs = state.lib.songs.slice().sort((a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||""));
+  if (state.filterFav) songs = songs.filter(s => (state.lib.favorites||[]).includes(s.id));
+  if (q) {
+    songs = songs.filter(s => {
+      const hay = [s.title, s.artist, s.style, s.key && s.key.tonic, s.timeSignature, String(s.bpm)].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if (!songs.length) {
+    const e = document.createElement("div");
+    e.className = "empty";
+    e.textContent = state.filterFav ? "收藏夹是空的" : "还没有歌曲，点「新建歌曲」或导入 JSON。";
+    list.appendChild(e);
+    return;
+  }
+  for (const s of songs) {
+    const item = document.createElement("button");
+    item.className = "song-item" + (s.id === state.songId ? " active" : "");
+    item.type = "button";
+    const info = document.createElement("div");
+    const t = document.createElement("div"); t.className = "t"; t.textContent = s.title || "未命名";
+    const a = document.createElement("div"); a.className = "a"; a.textContent = s.artist || "—";
+    const m = document.createElement("div"); m.className = "meta";
+    m.textContent = `${formatNote(s.key.tonic,"glyph")} · ${s.bpm} BPM · ${s.timeSignature}`;
+    info.appendChild(t); info.appendChild(a); info.appendChild(m);
+    const fav = document.createElement("div");
+    fav.className = "fav" + ((state.lib.favorites||[]).includes(s.id) ? " on" : "");
+    fav.textContent = "★";
+    fav.title = "收藏";
+    fav.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFav(s.id);
+    });
+    item.appendChild(info); item.appendChild(fav);
+    item.addEventListener("click", () => selectSong(s.id));
+    list.appendChild(item);
+  }
+}
+function toggleFav(id) {
+  const favs = new Set(state.lib.favorites || []);
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  state.lib.favorites = [...favs];
+  saveLibrary(state.lib);
+  renderLibrary();
+}
+function selectSong(id) {
+  const s = state.lib.songs.find(x => x.id === id);
+  if (!s) return;
+  state.songId = id;
+  state.song = JSON.parse(JSON.stringify(s));
+  history.reset(state.song);
+  fillSongForm();
+  renderAll();
+  document.body.classList.remove("rail-open");
+  setStatus("已载入");
+}
+function newSong() {
+  const song = createSong({
+    title: "未命名 " + (state.lib.songs.length + 1),
+    artist: "",
+  });
+  // seed a nice starter structure
+  song.sections = [
+    { id: rid("sec_"), name: "Intro", repeat: 1, cue: "", bars: [
+      makeChordBar([["C",4],["Am",4],["F",4],["G",4]])
+    ]},
+    { id: rid("sec_"), name: "Verse", repeat: 1, cue: "", bars: [
+      makeChordBar([["C",2],["G/B",2],["Am",4]]),
+      makeChordBar([["F",2],["G",2],["C",4]]),
+    ]},
+  ];
+  uidAll(song);
+  state.lib.songs.unshift(JSON.parse(JSON.stringify(song)));
+  saveLibrary(state.lib);
+  selectSong(song.id);
+  toast("已新建歌曲");
+}
+function makeChordBar(list) {
+  const bar = createBar("chords");
+  bar.events = list.map(([c,b]) => {
+    const p = parseChordToken(c);
+    return createEvent("chord", b, p.chord);
+  });
+  return bar;
+}
+
+/* ---------- forms ---------- */
+function fillSongForm() {
+  const s = state.song;
+  if (!s) return;
+  document.getElementById("fTitle").value = s.title || "";
+  document.getElementById("fArtist").value = s.artist || "";
+  document.getElementById("fTonic").value = s.key.tonic || "C";
+  document.getElementById("fBpm").value = s.bpm || 96;
+  document.getElementById("fMeter").value = s.timeSignature || "4/4";
+  document.getElementById("fStyle").value = s.style || "";
+  document.getElementById("fCols").value = String(s.layout.barsPerRow || 4);
+  document.getElementById("fLyricSize").value = String(s.layout.lyricSize || 1.4);
+  document.getElementById("fChordSize").value = String(s.layout.chordSize || 1);
+  document.getElementById("fChordSym").value = s.layout.chordSymbols || "common";
+  document.getElementById("fSeventh").value = s.layout.seventhSuffix || "subscript";
+  document.getElementById("fNotes").value = s.notes || "";
+  const lines = (s.layout.displayLines || ["chord","degree"]).join("+");
+  document.getElementById("fLines").value =
+    ["chord","degree","chord+degree","chord+degree+roman"].includes(lines) ? lines : "chord+degree";
+  document.getElementById("topTitle").textContent = s.title || "未命名";
+  document.getElementById("topSub").textContent =
+    `${formatNote(s.key.tonic,"glyph")} · ${s.bpm} BPM · ${s.timeSignature}` + (s.artist ? " · " + s.artist : "");
+}
+function bindSongForm() {
+  const map = [
+    ["fTitle", (v, d) => d.title = v || "未命名"],
+    ["fArtist", (v, d) => d.artist = v],
+    ["fTonic", (v, d) => d.key.tonic = v],
+    ["fBpm", (v, d) => d.bpm = Math.min(400, Math.max(20, Number(v) || 96))],
+    ["fMeter", (v, d) => d.timeSignature = v],
+    ["fStyle", (v, d) => d.style = v],
+    ["fCols", (v, d) => d.layout.barsPerRow = Number(v) || 4],
+    ["fLyricSize", (v, d) => d.layout.lyricSize = Number(v) || 1.4],
+    ["fChordSize", (v, d) => d.layout.chordSize = Number(v) || 1],
+    ["fChordSym", (v, d) => d.layout.chordSymbols = v],
+    ["fSeventh", (v, d) => d.layout.seventhSuffix = v],
+    ["fNotes", (v, d) => d.notes = v],
+  ];
+  map.forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    el.addEventListener("change", () => {
+      commit(d => fn(el.value, d));
+      fillSongForm();
+    });
+  });
+  document.getElementById("fLines").addEventListener("change", (e) => {
+    const val = e.target.value;
+    const lines = val.split("+").filter(Boolean);
+    commit(d => d.layout.displayLines = lines);
+  });
+}
+
+/* ---------- sheets ---------- */
+function openSheet(title, build) {
+  const back = document.getElementById("sheetBackdrop");
+  const sheet = document.getElementById("sheet");
+  sheet.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "sheet-head";
+  const h = document.createElement("h3");
+  h.textContent = title;
+  const x = document.createElement("button");
+  x.className = "icon-btn";
+  x.textContent = "×";
+  x.addEventListener("click", closeSheet);
+  head.appendChild(h); head.appendChild(x);
+  sheet.appendChild(head);
+  build(sheet);
+  back.classList.add("open");
+}
+function closeSheet() {
+  document.getElementById("sheetBackdrop").classList.remove("open");
+}
+document.getElementById("sheetBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "sheetBackdrop") closeSheet();
+});
+
+function findBar(barId) {
+  for (const sec of state.song.sections) {
+    const bar = sec.bars.find(b => b.id === barId);
+    if (bar) return { sec, bar };
+  }
+  return null;
+}
+function openEventSheet(barId, eventId, eventIndex) {
+  const found = findBar(barId);
+  if (!found) return;
+  const { bar } = found;
+  const ev = bar.events.find(e => e.id === eventId);
+  if (!ev) return;
+  const i = bar.events.indexOf(ev);
+
+  openSheet("编辑事件 · " + (ev.kind === "rest" ? "休止" : formatChord(ev.chord, layoutOpts(state.song))), (sheet) => {
+    const grid = document.createElement("div");
+    grid.className = "sheet-grid";
+
+    if (ev.kind === "chord") {
+      const fChord = field("和弦（可 G/B）");
+      const inp = document.createElement("input");
+      inp.value = formatChord(ev.chord, { ...layoutOpts(state.song), accidentalGlyphs: "ascii", chordSymbols: "common", seventhSuffix: "plain" });
+      fChord.appendChild(inp);
+      grid.appendChild(fChord);
+      // quality select
+      const fQ = field("性质");
+      const sel = document.createElement("select");
+      QUALITY_ORDER.forEach(q => {
+        const o = document.createElement("option");
+        o.value = q; o.textContent = QUALITIES[q].label + "（" + (QUALITIES[q].common || "—") + "）";
+        if (q === ev.chord.quality) o.selected = true;
+        sel.appendChild(o);
+      });
+      fQ.appendChild(sel);
+      grid.appendChild(fQ);
+
+      const fB = field("时值（拍）");
+      const bIn = document.createElement("input");
+      bIn.type = "number"; bIn.min = "0.25"; bIn.step = "0.25";
+      bIn.value = ev.beats;
+      fB.appendChild(bIn);
+      grid.appendChild(fB);
+
+      const fLy = field("歌词（对应本事件）");
+      fLy.className = "field full";
+      const ly = document.createElement("input");
+      ly.value = (bar.lyrics && bar.lyrics[i]) || "";
+      ly.placeholder = "唱词 / 音节";
+      fLy.appendChild(ly);
+      grid.appendChild(fLy);
+
+      const apply = () => {
+        const parsed = parseChordToken(inp.value.trim());
+        if (!parsed.ok) { toast(parsed.error); return; }
+        if (parsed.rest || parsed.empty) { toast("请保持为和弦，或删除后添加休止/空白"); return; }
+        const beats = Number(bIn.value) || 1;
+        // 文本里若写了性质则以文本为准；未写则用下拉框
+        const typedQuality = /[^A-Ga-g#b♯♭\/]/.test(inp.value.trim().replace(/^[A-Ga-g][#b♯♭]{0,2}/, "").replace(/\/.*$/, "").trim());
+        const quality = typedQuality ? parsed.chord.quality : sel.value;
+        commit(d => {
+          const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+          const e = f.events.find(x => x.id === eventId);
+          e.chord = parsed.chord;
+          e.chord.quality = quality;
+          e.beats = beats;
+          // lyrics
+          const text = ly.value;
+          if (!f.lyrics) f.lyrics = f.events.map(() => "");
+          while (f.lyrics.length < f.events.length) f.lyrics.push("");
+          f.lyrics[i] = text;
+          if (f.lyrics.every(x => !String(x||"").trim())) f.lyrics = null;
+        });
+        closeSheet();
+      };
+
+      const actions = document.createElement("div");
+      actions.className = "btn-row full";
+      actions.style.gridColumn = "1/-1";
+      const save = document.createElement("button");
+      save.className = "btn btn-primary"; save.textContent = "保存";
+      save.addEventListener("click", apply);
+      const toRest = document.createElement("button");
+      toRest.className = "btn"; toRest.textContent = "改为休止";
+      toRest.addEventListener("click", () => {
+        commit(d => {
+          const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+          const e = f.events.find(x => x.id === eventId);
+          e.kind = "rest"; delete e.chord;
+        });
+        closeSheet();
+      });
+      const del = document.createElement("button");
+      del.className = "btn btn-danger"; del.textContent = "删除事件";
+      del.addEventListener("click", () => {
+        commit(d => {
+          const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+          f.events = f.events.filter(x => x.id !== eventId);
+          if (f.lyrics) {
+            f.lyrics.splice(i, 1);
+            if (f.lyrics.every(x => !String(x||"").trim())) f.lyrics = null;
+          }
+          if (!f.events.length) f.type = "empty";
+        });
+        closeSheet();
+      });
+      actions.appendChild(save); actions.appendChild(toRest); actions.appendChild(del);
+      sheet.appendChild(grid); sheet.appendChild(actions);
+
+      inp.addEventListener("keydown", e => { if (e.key === "Enter") apply(); });
+    } else {
+      const fB = field("时值（拍）");
+      const bIn = document.createElement("input");
+      bIn.type = "number"; bIn.min = "0.25"; bIn.step = "0.25";
+      bIn.value = ev.beats;
+      fB.appendChild(bIn);
+      grid.appendChild(fB);
+
+      const fC = field("改为和弦");
+      const cIn = document.createElement("input");
+      cIn.placeholder = "如 Am7 / G/B";
+      fC.appendChild(cIn);
+      grid.appendChild(fC);
+
+      const actions = document.createElement("div");
+      actions.className = "btn-row";
+      actions.style.gridColumn = "1/-1";
+      const save = document.createElement("button");
+      save.className = "btn btn-primary"; save.textContent = "保存";
+      save.addEventListener("click", () => {
+        commit(d => {
+          const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+          const e = f.events.find(x => x.id === eventId);
+          e.beats = Number(bIn.value) || 1;
+          const ch = cIn.value.trim();
+          if (ch) {
+            const p = parseChordToken(ch);
+            if (!p.ok) { toast(p.error); return; }
+            e.kind = "chord"; e.chord = p.chord;
+          }
+        });
+        closeSheet();
+      });
+      const del = document.createElement("button");
+      del.className = "btn btn-danger"; del.textContent = "删除";
+      del.addEventListener("click", () => {
+        commit(d => {
+          const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+          f.events = f.events.filter(x => x.id !== eventId);
+          if (f.lyrics) f.lyrics.splice(i, 1);
+          if (!f.events.length) f.type = "empty";
+        });
+        closeSheet();
+      });
+      actions.appendChild(save); actions.appendChild(del);
+      sheet.appendChild(grid); sheet.appendChild(actions);
+    }
+  });
+}
+function field(label) {
+  const f = document.createElement("div");
+  f.className = "field";
+  const l = document.createElement("label");
+  l.textContent = label;
+  f.appendChild(l);
+  return f;
+}
+function openBarSheet(sectionId, barId) {
+  const found = findBar(barId);
+  if (!found) return;
+  const { bar } = found;
+  openSheet(bar.type === "empty" ? "空白小节" : "编辑小节", (sheet) => {
+    const grid = document.createElement("div");
+    grid.className = "sheet-grid";
+    const info = document.createElement("div");
+    info.className = "hint full";
+    info.textContent = bar.type === "empty"
+      ? "空白小节记号是 0，与休止不同。"
+      : `事件 ${bar.events.length} 个 · 合计 ${round4(sumBeats(bar.events))} 拍`;
+    grid.appendChild(info);
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "btn-row full";
+    btnRow.style.gridColumn = "1/-1";
+
+    const addChord = document.createElement("button");
+    addChord.className = "btn btn-primary";
+    addChord.textContent = "+ 和弦事件";
+    addChord.addEventListener("click", () => {
+      commit(d => {
+        const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+        f.type = "chords";
+        const need = meterBeats(d.timeSignature);
+        const used = sumBeats(f.events);
+        const left = Math.max(0.25, need - used);
+        f.events.push(createEvent("chord", round4(left), parseChordToken("C").chord));
+        if (f.lyrics) f.lyrics.push("");
+      });
+      openBarSheet(sectionId, barId);
+    });
+
+    const addRest = document.createElement("button");
+    addRest.className = "btn";
+    addRest.textContent = "+ 休止";
+    addRest.addEventListener("click", () => {
+      commit(d => {
+        const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+        f.type = "chords";
+        const need = meterBeats(d.timeSignature);
+        const used = sumBeats(f.events);
+        const left = Math.max(0.25, need - used);
+        f.events.push(createEvent("rest", round4(left)));
+        if (f.lyrics) f.lyrics.push("");
+      });
+      openBarSheet(sectionId, barId);
+    });
+
+    const asEmpty = document.createElement("button");
+    asEmpty.className = "btn";
+    asEmpty.textContent = "设为空白 0";
+    asEmpty.addEventListener("click", () => {
+      commit(d => {
+        const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+        f.type = "empty";
+        f.events = [];
+        f.lyrics = null;
+      });
+      closeSheet();
+    });
+
+    const del = document.createElement("button");
+    del.className = "btn btn-danger";
+    del.textContent = "删除小节";
+    del.addEventListener("click", () => {
+      commit(d => {
+        for (const s of d.sections) s.bars = s.bars.filter(b => b.id !== barId);
+      });
+      closeSheet();
+    });
+
+    btnRow.appendChild(addChord); btnRow.appendChild(addRest); btnRow.appendChild(asEmpty); btnRow.appendChild(del);
+
+    // batch lyrics
+    const fLy = field("本小节歌词（按事件用空格/逗号分隔）");
+    fLy.className = "field full";
+    fLy.style.gridColumn = "1/-1";
+    const ly = document.createElement("textarea");
+    ly.style.minHeight = "64px";
+    ly.style.fontFamily = "inherit";
+    ly.value = (bar.lyrics || []).join(" ");
+    fLy.appendChild(ly);
+    const lyBtn = document.createElement("button");
+    lyBtn.className = "btn";
+    lyBtn.style.marginTop = "6px";
+    lyBtn.textContent = "写入歌词";
+    lyBtn.addEventListener("click", () => {
+      const parts = ly.value.split(/[\s,，、]+/).filter(x => x !== "");
+      commit(d => {
+        const f = d.sections.flatMap(s => s.bars).find(b => b.id === barId);
+        if (!parts.length) f.lyrics = null;
+        else {
+          f.lyrics = f.events.map((_, i) => parts[i] || "");
+          if (f.lyrics.every(x => !String(x||"").trim())) f.lyrics = null;
+        }
+      });
+      closeSheet();
+      toast("歌词已写入");
+    });
+    fLy.appendChild(lyBtn);
+
+    sheet.appendChild(grid);
+    sheet.appendChild(btnRow);
+    sheet.appendChild(fLy);
+  });
+}
+function openSectionSheet(sectionId) {
+  const sec = state.song.sections.find(s => s.id === sectionId);
+  if (!sec) return;
+  openSheet("段落设置", (sheet) => {
+    const grid = document.createElement("div");
+    grid.className = "sheet-grid";
+    const fName = field("段落名");
+    const nIn = document.createElement("input"); nIn.value = sec.name; fName.appendChild(nIn);
+    const fRep = field("重复标注 ×");
+    const rIn = document.createElement("input"); rIn.type="number"; rIn.min="1"; rIn.max="99"; rIn.value = sec.repeat || 1; fRep.appendChild(rIn);
+    const fCue = field("演奏提示");
+    fCue.className = "field full";
+    const cIn = document.createElement("input"); cIn.value = sec.cue || ""; cIn.placeholder = "如：收住 / 进副歌"; fCue.appendChild(cIn);
+    grid.appendChild(fName); grid.appendChild(fRep); grid.appendChild(fCue);
+
+    // 整段歌词：按事件顺序填空格分词
+    const fLy = field("整段歌词（按和弦事件顺序，空格分隔；休止/空白用 . 占位）");
+    fLy.className = "field full";
+    fLy.style.gridColumn = "1/-1";
+    const ly = document.createElement("textarea");
+    ly.style.minHeight = "88px";
+    ly.style.fontFamily = "inherit";
+    ly.style.fontSize = "13px";
+    const seq = [];
+    sec.bars.forEach(bar => {
+      if (bar.type === "empty" || !bar.events || !bar.events.length) {
+        seq.push("||"); // 小节记号
+        return;
+      }
+      bar.events.forEach((ev, i) => {
+        const cur = (bar.lyrics && bar.lyrics[i]) || "";
+        seq.push(cur || (ev.kind === "rest" ? "." : ""));
+      });
+      seq.push("||");
+    });
+    ly.value = seq.join(" ").replace(/ \|\| /g, " || ");
+    ly.placeholder = "例：候 鸟 飞 远 || 把 信 寄 给 ||";
+    fLy.appendChild(ly);
+    const lyHint = document.createElement("div");
+    lyHint.className = "hint";
+    lyHint.textContent = "|| 表示换小节；. 表示该事件不唱。也可在谱面上点按单个和弦逐字改。";
+    fLy.appendChild(lyHint);
+
+    const actions = document.createElement("div");
+    actions.className = "btn-row";
+    actions.style.gridColumn = "1/-1";
+    const save = document.createElement("button");
+    save.className = "btn btn-primary"; save.textContent = "保存设置";
+    save.addEventListener("click", () => {
+      commit(d => {
+        const s = d.sections.find(x => x.id === sectionId);
+        s.name = nIn.value.trim() || "Section";
+        s.repeat = Math.min(99, Math.max(1, Number(rIn.value) || 1));
+        s.cue = cIn.value.trim();
+      });
+      closeSheet();
+    });
+    const applyLy = document.createElement("button");
+    applyLy.className = "btn btn-primary";
+    applyLy.textContent = "写入歌词";
+    applyLy.addEventListener("click", () => {
+      const tokens = ly.value.trim().split(/\s+/).filter(Boolean);
+      const queues = sec.bars.map(bar => (bar.type === "chords" && bar.events) ? bar.events.length : 0);
+      commit(d => {
+        const s = d.sections.find(x => x.id === sectionId);
+        let ti = 0;
+        s.bars.forEach((bar, bi) => {
+          const n = queues[bi];
+          if (!n) { bar.lyrics = null; return; }
+          const row = [];
+          for (let i = 0; i < n; i++) {
+            while (ti < tokens.length && tokens[ti] === "||") ti++;
+            if (ti >= tokens.length) { row.push(""); continue; }
+            const tok = tokens[ti++];
+            row.push(tok === "." || tok === "||" ? "" : tok);
+          }
+          if (row.every(x => !String(x||"").trim())) bar.lyrics = null;
+          else bar.lyrics = row;
+        });
+      });
+      toast("整段歌词已写入");
+      closeSheet();
+    });
+    const addBar = document.createElement("button");
+    addBar.className = "btn"; addBar.textContent = "+ 小节";
+    addBar.addEventListener("click", () => {
+      commit(d => {
+        const s = d.sections.find(x => x.id === sectionId);
+        s.bars.push(createBar("empty"));
+      });
+      closeSheet();
+    });
+    const del = document.createElement("button");
+    del.className = "btn btn-danger"; del.textContent = "删除段落";
+    del.addEventListener("click", () => {
+      commit(d => { d.sections = d.sections.filter(x => x.id !== sectionId); });
+      closeSheet();
+    });
+    actions.appendChild(save); actions.appendChild(applyLy); actions.appendChild(addBar); actions.appendChild(del);
+    sheet.appendChild(grid);
+    sheet.appendChild(fLy);
+    sheet.appendChild(actions);
+  });
+}
+function addSection() {
+  commit(d => {
+    d.sections.push({
+      id: rid("sec_"),
+      name: "Section " + (d.sections.length + 1),
+      repeat: 1, cue: "",
+      bars: [createBar("empty"), createBar("empty"), createBar("empty"), createBar("empty")],
+    });
+  });
+}
+
+/* ---------- export / import / print ---------- */
+function downloadJSON(obj, filename) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function exportSong() {
+  downloadJSON({
+    format: "chord-chart-workbench",
+    schemaVersion: 2,
+    exportedAt: new Date().toISOString(),
+    kind: "song",
+    song: state.song,
+  }, `${(state.song.title || "song").replace(/[\\/:*?"<>|]/g,"_")}.json`);
+  toast("已导出本曲 JSON");
+}
+function exportLibrary() {
+  downloadJSON({
+    format: "chord-chart-workbench",
+    schemaVersion: 2,
+    exportedAt: new Date().toISOString(),
+    kind: "library",
+    favorites: state.lib.favorites,
+    songs: state.lib.songs,
+  }, `功能谱曲库.json`);
+  toast("已导出曲库 JSON");
+}
+function importJSONFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(String(reader.result));
+      if (data.song && data.song.sections) {
+        const song = normalizeLibrary({ songs: [data.song] }).songs[0];
+        // always new id? keep if not clash
+        state.lib.songs.unshift(song);
+        saveLibrary(state.lib);
+        selectSong(song.id);
+        toast("已导入歌曲");
+        return;
+      }
+      if (Array.isArray(data.songs)) {
+        const pack = normalizeLibrary(data);
+        let n = 0;
+        for (const s of pack.songs) {
+          const i = state.lib.songs.findIndex(x => x.id === s.id);
+          if (i >= 0) state.lib.songs[i] = s;
+          else state.lib.songs.unshift(s);
+          n++;
+        }
+        if (Array.isArray(data.favorites)) {
+          state.lib.favorites = [...new Set([...(state.lib.favorites||[]), ...data.favorites])];
+        }
+        saveLibrary(state.lib);
+        if (pack.songs[0]) selectSong(pack.songs[0].id);
+        toast(`已导入 ${n} 首`);
+        return;
+      }
+      // bare song
+      if (data.sections) {
+        const song = normalizeLibrary({ songs: [data] }).songs[0];
+        state.lib.songs.unshift(song);
+        saveLibrary(state.lib);
+        selectSong(song.id);
+        toast("已导入歌曲");
+        return;
+      }
+      toast("JSON 结构无法识别");
+    } catch (e) {
+      toast("JSON 解析失败：" + e.message);
+    }
+  };
+  reader.readAsText(file);
+}
+function doPrint() {
+  const errs = validateSong(state.song);
+  const real = errs.filter(e => e.includes("时值") || e.includes("小节"));
+  if (real.length) {
+    if (!confirm("存在时值/小节问题：\n" + real.slice(0,5).join("\n") + "\n\n仍要打印吗？")) return;
+  }
+  window.print();
+}
+
+/* ---------- theme / mode ---------- */
+function setTheme(theme) {
+  state.theme = theme;
+  document.documentElement.dataset.theme = theme === "green" ? "" : theme;
+  if (theme === "green") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme === "mono" ? "mono" : "white");
+  savePrefs({ theme });
+  document.querySelectorAll("[data-theme-btn]").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-theme-btn") === theme);
+  });
+}
+function setMode(mode) {
+  state.mode = mode;
+  document.body.dataset.mode = mode;
+  document.querySelectorAll("[data-mode-btn]").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-mode-btn") === mode);
+  });
+  if (mode === "stage") {
+    try {
+      if (navigator.wakeLock && navigator.wakeLock.request) navigator.wakeLock.request("screen");
+    } catch (_) {}
+  }
+  renderAll();
+}
+
+/* ---------- render all ---------- */
+function renderAll() {
+  renderPaper();
+  renderLibrary();
+  fillSongForm();
+}
+
+/* ---------- sample ---------- */
+function sampleSong() {
+  const s = createSong({
+    title: "候鸟信",
+    artist: "示例乐队",
+    style: "Indie Pop",
+    bpm: 108,
+    timeSignature: "4/4",
+    notes: "前奏吉他分解，副歌全员。歌词是主角，台下看词即可。",
+    layout: { barsPerRow: 4, lyricSize: 1.4, chordSize: 0.95, displayLines: ["chord","degree"] },
+  });
+  s.sections = [
+    { id: rid("sec_"), name: "Intro", repeat: 1, cue: "吉他", bars: [
+      makeChordBar([["C",4],["G/B",4]]),
+      makeChordBar([["Am",4],["F",4]]),
+    ]},
+    { id: rid("sec_"), name: "Verse", repeat: 1, cue: "", bars: [
+      lyricBar([["C",2,"候"],["G/B",2,"鸟"],["Am",4,"飞"],["F",4,"远"]]),
+      lyricBar([["C",2,"把"],["Am",2,"信"],["F",4,"寄"],["G",4,"给"]]),
+    ]},
+    { id: rid("sec_"), name: "Chorus", repeat: 1, cue: "齐", bars: [
+      lyricBar([["F",2,"风"],["G",2,"起"],["Em",4,"时"],["Am",4,"我"]]),
+      lyricBar([["F",2,"在"],["G",2,"唱"],["C",4,"这"],["C",4,"首"]]),
+    ]},
+    { id: rid("sec_"), name: "Outro", repeat: 1, cue: "", bars: [
+      makeChordBar([["F",2],["G",2],["C",4]]),
+      { id: rid("bar_"), type: "empty", lyrics: null, events: [] },
+    ]},
+  ];
+  // Em is m quality on E - parse
+  s.sections.forEach(sec => sec.bars.forEach(b => {
+    b.events = b.events.map(ev => {
+      if (ev.kind === "chord" && ev.chord) return ev;
+      return ev;
+    });
+  }));
+  // Fix Em parse - makeChordBar already parses
+  uidAll(s);
+  return s;
+}
+function lyricBar(items) {
+  const bar = createBar("chords");
+  bar.events = items.map(([c,b]) => {
+    const p = parseChordToken(c);
+    return createEvent("chord", b, p.chord);
+  });
+  bar.lyrics = items.map(x => x[2] || "");
+  return bar;
+}
+
+/* ---------- init ---------- */
+function init() {
+  // theme
+  const prefs = loadPrefs();
+  setTheme(prefs.theme || "green");
+
+  // library
+  state.lib = loadLibrary();
+  if (state.lib.corrupted) {
+    state.lib = { schemaVersion:2, favorites:[], songs:[] };
+    toast("本地曲库损坏，已重置");
+  }
+  if (!state.lib.songs.length) {
+    const s = sampleSong();
+    state.lib.songs.push(s);
+    saveLibrary(state.lib);
+  }
+  // ensure favorites array
+  if (!state.lib.favorites) state.lib.favorites = [];
+
+  // select first
+  const first = state.lib.songs[0];
+  state.songId = first.id;
+  state.song = JSON.parse(JSON.stringify(first));
+  history.reset(state.song);
+
+  // tonics
+  const sel = document.getElementById("fTonic");
+  TONICS.forEach(t => {
+    const o = document.createElement("option");
+    o.value = t; o.textContent = t.replace(/#/g,"♯").replace(/b/g,"♭");
+    sel.appendChild(o);
+  });
+
+  bindSongForm();
+  fillSongForm();
+  renderAll();
+
+  // top actions
+  document.getElementById("btnNew").addEventListener("click", newSong);
+  document.getElementById("btnUndo").addEventListener("click", () => {
+    const s = history.undo();
+    if (!s) return toast("没有可撤销");
+    state.song = s; persistCurrent(); renderAll();
+  });
+  document.getElementById("btnRedo").addEventListener("click", () => {
+    const s = history.redo();
+    if (!s) return toast("没有可重做");
+    state.song = s; persistCurrent(); renderAll();
+  });
+  document.getElementById("btnAddSection").addEventListener("click", addSection);
+  document.getElementById("btnFind").addEventListener("click", () => {
+    openSheet("找谱", (sheet) => {
+      const f = field("搜索歌名 / 艺人 / 调");
+      const inp = document.createElement("input");
+      inp.placeholder = "输入关键字，点列表载入";
+      f.appendChild(inp);
+      const list = document.createElement("div");
+      list.className = "song-list";
+      list.style.maxHeight = "50vh";
+      const paint = (q) => {
+        list.innerHTML = "";
+        const qq = (q||"").trim().toLowerCase();
+        const songs = state.lib.songs.filter(s => !qq || [s.title,s.artist,s.style,s.key&&s.key.tonic].join(" ").toLowerCase().includes(qq));
+        if (!songs.length) {
+          const e = document.createElement("div"); e.className = "empty"; e.textContent = "没有匹配的歌";
+          list.appendChild(e); return;
+        }
+        songs.forEach(s => {
+          const item = document.createElement("button");
+          item.type = "button"; item.className = "song-item";
+          item.innerHTML = `<div><div class="t"></div><div class="a"></div><div class="meta"></div></div>`;
+          item.querySelector(".t").textContent = s.title || "未命名";
+          item.querySelector(".a").textContent = s.artist || "";
+          item.querySelector(".meta").textContent = `${formatNote(s.key.tonic,"glyph")} · ${s.bpm} BPM`;
+          item.addEventListener("click", () => { selectSong(s.id); closeSheet(); });
+          list.appendChild(item);
+        });
+      };
+      inp.addEventListener("input", () => paint(inp.value));
+      sheet.appendChild(f);
+      sheet.appendChild(list);
+      paint("");
+      setTimeout(() => inp.focus(), 50);
+    });
+  });
+  document.getElementById("btnExportSong").addEventListener("click", exportSong);
+  document.getElementById("btnExportLib").addEventListener("click", exportLibrary);
+  document.getElementById("btnPrint").addEventListener("click", doPrint);
+  document.getElementById("btnImport").addEventListener("click", () => document.getElementById("fileImport").click());
+  document.getElementById("fileImport").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importJSONFile(f);
+    e.target.value = "";
+  });
+  document.getElementById("btnDelete").addEventListener("click", () => {
+    if (!confirm("删除这首歌曲？不可恢复（除非你已导出 JSON）。")) return;
+    state.lib.songs = state.lib.songs.filter(s => s.id !== state.songId);
+    state.lib.favorites = (state.lib.favorites||[]).filter(id => id !== state.songId);
+    saveLibrary(state.lib);
+    if (!state.lib.songs.length) {
+      const s = sampleSong();
+      state.lib.songs.push(s);
+      saveLibrary(state.lib);
+    }
+    selectSong(state.lib.songs[0].id);
+  });
+
+  document.getElementById("libSearch").addEventListener("input", (e) => {
+    state.search = e.target.value; renderLibrary();
+  });
+  document.getElementById("filterAll").addEventListener("click", () => {
+    state.filterFav = false;
+    document.getElementById("filterAll").classList.add("active");
+    document.getElementById("filterFav").classList.remove("active");
+    renderLibrary();
+  });
+  document.getElementById("filterFav").addEventListener("click", () => {
+    state.filterFav = true;
+    document.getElementById("filterFav").classList.add("active");
+    document.getElementById("filterAll").classList.remove("active");
+    renderLibrary();
+  });
+
+  document.querySelectorAll("[data-mode-btn]").forEach(b => {
+    b.addEventListener("click", () => setMode(b.getAttribute("data-mode-btn")));
+  });
+  document.querySelectorAll("[data-theme-btn]").forEach(b => {
+    b.addEventListener("click", () => setTheme(b.getAttribute("data-theme-btn")));
+  });
+
+  // parser
+  document.getElementById("btnParse").addEventListener("click", () => {
+    const res = parseChartText(document.getElementById("fParser").value, state.song.timeSignature);
+    const box = document.getElementById("parseMsg");
+    box.innerHTML = "";
+    if (res.errors.length) {
+      const e = document.createElement("div");
+      e.className = "error";
+      e.textContent = res.errors.join("\n");
+      box.appendChild(e);
+    } else {
+      const ok = document.createElement("div");
+      ok.className = "warn";
+      ok.style.background = "var(--accent-soft)";
+      ok.style.color = "var(--accent-ink)";
+      ok.textContent = `解析成功：${res.sections.length} 个段落，共 ${res.sections.reduce((s,x)=>s+x.bars.length,0)} 小节。点「解析并应用」才会写入（会覆盖段落，歌词将丢失）。`;
+      box.appendChild(ok);
+    }
+  });
+  document.getElementById("btnApply").addEventListener("click", () => {
+    const res = parseChartText(document.getElementById("fParser").value, state.song.timeSignature);
+    const box = document.getElementById("parseMsg");
+    box.innerHTML = "";
+    if (res.errors.length) {
+      const e = document.createElement("div");
+      e.className = "error";
+      e.textContent = res.errors.join("\n");
+      box.appendChild(e);
+      return;
+    }
+    if (!confirm("解析并应用会替换全部段落结构。\n已有逐字歌词将被清空（文本语法不含歌词）。继续？")) return;
+    commit(d => { d.sections = res.sections; });
+    toast("已应用文本谱");
+    document.getElementById("btnDump").click();
+  });
+  document.getElementById("btnDump").addEventListener("click", () => {
+    document.getElementById("fParser").value = dumpChartText(state.song);
+    toast("已导出到文本框");
+  });
+
+  // mobile rail
+  document.getElementById("railOpen").addEventListener("click", () => document.body.classList.add("rail-open"));
+  document.getElementById("railClose").addEventListener("click", () => document.body.classList.remove("rail-open"));
+
+  // keyboard
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      document.getElementById(e.shiftKey ? "btnRedo" : "btnUndo").click();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+      // let print dialog work; our print styles ready
+    }
+    if (e.key === "Escape") closeSheet();
+  });
+
+  setStatus("就绪 · 数据自动保存在本机");
+}
+
+try { init(); }
+catch (err) {
+  console.error(err);
+  document.getElementById("paper").innerHTML =
+    '<div class="error">应用启动失败：' + escapeHtml(err && err.message || String(err)) + '</div>';
+}
+})();
+</script>
+</body>
+</html>

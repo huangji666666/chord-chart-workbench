@@ -1,0 +1,18 @@
+[
+  {
+    "directory": "sparks-nmn-source",
+    "origin": "https://github.com/yezhiyi9670/sparks-notation-1.git",
+    "commit": "e3b1e928894fa4dfd2e9ff275b4a42276f4232f9",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\source-archives\\sparks-nmn-source",
+    "scope": "sparse source checkout",
+    "date": "2026-10-09"
+  },
+  {
+    "directory": "chord-mark-source",
+    "origin": "https://github.com/no-chris/chord-mark.git",
+    "commit": "d9580e53341799a3a5b2edf373034e154ccdbcd3",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\source-archives\\chord-mark-source",
+    "scope": "sparse source checkout",
+    "date": "2026-10-09"
+  }
+]

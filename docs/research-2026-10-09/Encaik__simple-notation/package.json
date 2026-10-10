@@ -1,0 +1,23 @@
+{
+  "name": "simple-notation-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:docs": "pnpm --filter docs dev",
+    "build:web": "pnpm --filter web build-only",
+    "build:lib": "pnpm --filter simple-notation build",
+    "preview:web": "pnpm --filter web preview",
+    "test:lib": "pnpm --filter simple-notation test",
+    "coverage:lib": "pnpm --filter simple-notation coverage",
+    "deploy:web": "pnpm run build:lib && pnpm run build:web"
+  },
+  "devDependencies": {
+    "eslint": "^9.22.0",
+    "eslint-plugin-vue": "~10.0.0",
+    "prettier": "3.5.3",
+    "typescript": "^5.8.3"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

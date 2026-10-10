@@ -1,0 +1,105 @@
+[
+  {
+    "source": "https://raw.githubusercontent.com/tonaljs/tonal/main/docs/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\tonaljs__tonal\\docs-LICENSE",
+    "sha256": "0FF1A12A0F689D1A300DC75E1EFCE2F4154B3FC068EF2987ADBB505AD2C52123",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/Encaik/simple-notation/main/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Encaik__simple-notation\\README.md",
+    "sha256": "1251E85AE1A6E63204471BA584BE1FDBDE229D29B6A5A4A685C4A919D6DAD999",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/Encaik/simple-notation/main/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Encaik__simple-notation\\LICENSE",
+    "sha256": "5E5DB8160FD7E72849DDFF371FF6380B06CC4FDAD66522965EA4725655EF62B6",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/Encaik/simple-notation/main/package.json",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\Encaik__simple-notation\\package.json",
+    "sha256": "B591051874BEF55EC8AD6A3275F2DB5E78378C6D510692447B09DD6A2636C4F0",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/lucide-icons/lucide/main/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\lucide-icons__lucide\\LICENSE",
+    "sha256": "B495047BD93A9B06913511076F504DABA17D5BBEB3E0650F3BB53A4220329C57",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/main/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\notofonts__noto-cjk\\README.md",
+    "sha256": "B9D6622B3C72686E74693B41D30272075E1097AE7B6F53771A1127682E4FE55F",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\notofonts__noto-cjk\\Sans-LICENSE",
+    "sha256": "6A73F9541C2DE74158C0E7CF6B0A58EF774F5A780BF191F2D7EC9CC53EFE2BF2",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/omnibrain/svguitar/master/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\omnibrain__svguitar\\README.md",
+    "sha256": "3A01056FB9786A8F6F5030CA83F4292E819DB86AE6ECC5A58087358E7BC4C3B3",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/omnibrain/svguitar/master/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\omnibrain__svguitar\\LICENSE",
+    "sha256": "E5CD3671ABE01317FD657D204352F700FD3083331EAF2D78B79C112A496C4287",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/tombatossals/chords-db/master/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\tombatossals__chords-db\\README.md",
+    "sha256": "212397815F09405CFEB480087FE56F170F0CC49FD8EED4148F97A412D222A8A9",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/tombatossals/chords-db/master/LICENSE",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\tombatossals__chords-db\\LICENSE",
+    "sha256": "CA1F5A79ED75347924BBA07C979BC7A6D0F7438E82D655F7E8DCDFA32939A3D9",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/README.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\nbrosowsky__tonejs-instruments\\README.md",
+    "sha256": "6FB7A0F18561868BB5EBA97B218A1FACE22C17E7CB6661E4E6A8CD83B5A1CBA6",
+    "error": null
+  },
+  {
+    "source": "https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/LICENSE.md",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\nbrosowsky__tonejs-instruments\\LICENSE.md",
+    "sha256": "A98934BEF76E4832A20A3DD8E3928CBD6175EBA3A651B43256B5F23CE5CFD501",
+    "error": null
+  },
+  {
+    "source": "https://codeload.github.com/martijnversluis/ChordSheetJS/zip/refs/heads/master",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\source-archives\\ChordSheetJS-master.zip",
+    "bytes": 1198279,
+    "sha256": "DDDD9EC05D46D8423BF1F59DA3DAAA536C284CE8E9B84F37D12AA03305699B8D",
+    "error": null
+  },
+  {
+    "source": "https://codeload.github.com/yezhiyi9670/sparks-notation-1/zip/refs/heads/main",
+    "error": "One or more errors occurred. (Received an unexpected EOF or 0 bytes from the transport stream.)"
+  },
+  {
+    "source": "https://codeload.github.com/flufy3d/JianpuRender/zip/refs/heads/main",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\source-archives\\JianpuRender-main.zip",
+    "bytes": 171100,
+    "sha256": "3F0DCFD81819B9EC4F31EEA536E3940011127F1629A2E61D8385AD97B7BC3685",
+    "error": null
+  },
+  {
+    "source": "https://codeload.github.com/Encaik/simple-notation/zip/refs/heads/main",
+    "local": "F:\\AI写功能谱。\\docs\\research-2026-10-09\\source-archives\\simple-notation-main.zip",
+    "bytes": 71680814,
+    "sha256": "4F1D17801ABCC2F405BB655656FC75E99BF83FD9FC979E90A097CEDAB17FCF5C",
+    "error": null
+  }
+]

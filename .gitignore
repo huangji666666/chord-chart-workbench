@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.vite/
+*.log
+.DS_Store
+
+# 临时浏览器验证工具（不属于交付物，见 docs/HANDOFF.md §2）
+.verify/
+
+node_modules/LOL回放轨迹分析器/
+LOL回放轨迹分析器/
+.workbuddy/
+*.exe
+source-archives/
+docs/research-2026-10-09/source-archives/

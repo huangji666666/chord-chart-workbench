@@ -1,0 +1,25 @@
+{
+  "name": "hh-jianpu",
+  "version": "0.6.2",
+  "private": true,
+  "description": "A web-based dynamic numbered musical notation (jianpu) editor with AI-powered image recognition",
+  "scripts": {
+    "dev": "pnpm --filter @hh-jianpu/web dev",
+    "build": "pnpm --filter @hh-jianpu/core build && pnpm --filter @hh-jianpu/web build",
+    "build:core": "pnpm --filter @hh-jianpu/core build",
+    "build:web": "pnpm --filter @hh-jianpu/web build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "release": "./scripts/release.sh"
+  },
+  "keywords": [
+    "jianpu",
+    "numbered-musical-notation",
+    "music",
+    "sheet-music"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

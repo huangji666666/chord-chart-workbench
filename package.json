@@ -1,0 +1,31 @@
+{
+  "name": "chord-chart-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "功能谱制谱工作台 —— 面向乐手排练与现场演出的和弦 / 级数功能谱编辑器",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "@tombatossals/chords-db": "^0.5.1",
+    "abcjs": "^6.7.1",
+    "chord-mark": "^0.18.0",
+    "chord-mark-converters": "^0.18.0",
+    "html-to-image": "^1.11.13",
+    "jianpurender": "^1.8.1",
+    "jspdf": "^4.2.1",
+    "lucide": "^1.54.0",
+    "svg2pdf.js": "^2.8.1",
+    "svguitar": "^2.9.0",
+    "tonal": "6.4.3",
+    "tone": "^15.1.22"
+  }
+}

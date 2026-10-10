@@ -1,0 +1,52 @@
+{
+    "name": "@coderline/alphatab-monorepo",
+    "version": "1.9.0",
+    "description": "Monorepo for alphaTab and its related packages",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "clean": "npm run clean --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "lint-ci": "npm run lint --workspaces --if-present -- --reporter=github",
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "dev": "npm run dev --workspace=packages/playground",
+
+        "build-language-server": "npm run build --workspace=packages/lsp",
+        "dev-language-server": "npm run dev --workspace=packages/lsp",
+
+        "update-version": "node scripts/update-version.mjs",
+
+        "generate-typescript": "npm run generate-typescript --workspace=packages/alphatab",
+
+        "build": "npm run build --workspace=packages/alphatab",
+        "test": "npm run test --workspace=packages/alphatab",
+
+        "build-web": "npm run build && npm run build-webpack && npm run build-vite",
+        "test-web": "npm run test-web --workspaces --if-present",
+
+        "build-csharp": "npm run generate-typescript && npm run build --workspace=packages/csharp",
+        "test-csharp": "npm run test --workspace=packages/csharp",
+        "test-ci-csharp": "npm run test-ci --workspace=packages/csharp",
+
+        "build-kotlin": "npm run generate-typescript && npm run build --workspace=packages/kotlin",
+        "test-kotlin": "npm run test --workspace=packages/kotlin",
+
+        "build-vite": "npm run build --workspace=packages/vite",
+        "test-vite": "npm run test --workspace=packages/vite",
+
+        "build-webpack": "npm run build --workspace=packages/webpack",
+        "test-webpack": "npm run test --workspace=packages/webpack",
+
+        "build-monaco": "npm run build --workspace=packages/monaco",
+
+        "nightly-check": "node ./scripts/nightly.mts --mode check",
+        "nightly-pack": "node ./scripts/nightly.mts --mode pack",
+        "nightly-publish": "node ./scripts/nightly.mts --mode publish"
+    },
+    "overrides": {
+        "dompurify": "^3.4.12"
+    }
+}

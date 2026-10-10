@@ -1,0 +1,605 @@
+# ChordSheetJS ![NPM Version](https://img.shields.io/npm/v/chordsheetjs) ![License](https://img.shields.io/github/license/martijnversluis/chordsheetjs) [![CI](https://github.com/martijnversluis/ChordSheetJS/actions/workflows/ci.yml/badge.svg)](https://github.com/martijnversluis/ChordSheetJS/actions/workflows/ci.yml?query=branch%3Amaster) [![Release](https://github.com/martijnversluis/ChordSheetJS/actions/workflows/release.yml/badge.svg)](https://github.com/martijnversluis/ChordSheetJS/actions/workflows/release.yml)
+
+A JavaScript library for parsing and formatting chord sheets
+
+**Contents**
+
+- [Installation](#installation)
+- [How to ...?](#how-to-)
+- [Try it online](https://martijnversluis.github.io/ChordFiddle/)
+- [Supported ChordPro directives](#supported-chordpro-directives)
+- [Project board](https://github.com/users/martijnversluis/projects/4/views/1)
+- [API docs](https://martijnversluis.github.io/ChordSheetJS/)
+- [Contributing](CONTRIBUTING.md)
+
+## Installation
+
+### Package managers
+
+`ChordSheetJS` is on npm, to install run:
+
+```bash
+npm install chordsheetjs
+```
+
+Load with `import`:
+
+```javascript
+import ChordSheetJS from 'chordsheetjs';
+```
+
+or `require()`:
+
+```javascript
+var ChordSheetJS = require('chordsheetjs').default;
+```
+
+### Standalone bundle file
+
+If you're not using a build tool, you can download and use the `bundle.js` from the
+[latest release](https://github.com/martijnversluis/ChordSheetJS/releases/latest):
+
+```html
+<script src="bundle.js"></script>
+<script>
+  // ChordSheetJS is available in global namespace now
+  const parser = new ChordSheetJS.ChordProParser();
+</script>
+```
+
+## How to ...?
+
+### Parse chord sheet
+
+#### Regular chord sheets
+
+```javascript
+const chordSheet = `
+       Am         C/G        F          C
+Let it be, let it be, let it be, let it be
+C                G              F  C/E Dm C
+Whisper words of wisdom, let it be`.substring(1);
+
+const parser = new ChordSheetJS.ChordsOverWordsParser();
+const song = parser.parse(chordSheet);
+```
+
+#### Chord-line tokens
+
+ChordSheetJS recognizes non-chord tokens in its chords-over-words dialect. These tokens remain in the chord row,
+but are not transposed, normalized, included in `Song#getChords`, or used for chord diagrams:
+
+- `/`, `x`, and `-` are rhythm symbols.
+- `|`, `||`, `|.`, `|:`, `:|`, and `:|:` are barlines.
+- `:||` is supported as a ChordSheetJS repeat-barline extension.
+- Repeat counts such as `(2x)` and `(6x)` are instructions.
+- `N.C.`, `N.C`, `N/C`, and `NC` are no-chord markers.
+
+For example, `D2 / / / :|| (6x)` converts to `[D2][/][/][/][:||][(6x)]` in ChordPro and back without
+changing the tokens. ChordPro permits bracketed display content, but `:||` and unstarred repeat counts are
+ChordSheetJS conventions rather than official semantic ChordPro constructs. Explicit ChordPro annotations such as
+`[*Coda]` remain annotations.
+
+#### Ultimate Guitar chord sheets
+
+```javascript
+const chordSheet = `
+[Chorus]
+       Am         C/G        F          C
+Let it be, let it be, let it be, let it be
+C                G              F  C/E Dm C
+Whisper words of wisdom, let it be`.substring(1);
+
+const parser = new ChordSheetJS.UltimateGuitarParser();
+const song = parser.parse(chordSheet);
+```
+
+#### Chord pro format
+
+```javascript
+const chordSheet = `
+{title: Let it be}
+{subtitle: ChordSheetJS example version}
+
+{start_of_chorus: Chorus}
+Let it [Am]be, let it [C/G]be, let it [F]be, let it [C]be
+[C]Whisper words of [G]wisdom, let it [F]be [C/E] [Dm] [C]
+{end_of_chorus}`.substring(1);
+
+const parser = new ChordSheetJS.ChordProParser();
+const song = parser.parse(chordSheet);
+```
+
+### Display a parsed sheet
+
+#### Plain text format
+
+```javascript
+const formatter = new ChordSheetJS.TextFormatter();
+const disp = formatter.format(song);
+```
+
+#### HTML format
+
+##### Table-based layout
+
+```javascript
+const formatter = new ChordSheetJS.HtmlTableFormatter();
+const disp = formatter.format(song);
+```
+
+##### Div-based layout
+
+```javascript
+const formatter = new ChordSheetJS.HtmlDivFormatter();
+const disp = formatter.format(song);
+```
+
+#### Chord pro format
+
+```javascript
+const formatter = new ChordSheetJS.ChordProFormatter();
+const disp = formatter.format(song);
+```
+
+#### Chords over words format
+
+```javascript
+const formatter = new ChordSheetJS.ChordsOverWordsFormatter();
+const disp = formatter.format(song);
+```
+
+#### PDF format (BETA)
+
+> **Note:** `PdfFormatter` is currently in beta. Its API may change in future releases.
+
+PDF support is available as a separate entry point to keep the main bundle small.
+To use it, install `jspdf` as a dependency:
+
+```bash
+npm install jspdf
+```
+
+Then import `PdfFormatter` from `chordsheetjs/pdf`:
+
+```javascript
+import { PdfFormatter } from 'chordsheetjs/pdf';
+
+const formatter = new PdfFormatter();
+const doc = formatter.format(song);
+doc.save('song.pdf');
+```
+
+#### Measured HTML format (BETA)
+
+> **Note:** `MeasuredHtmlFormatter` is currently in beta. Its API may change in future releases.
+
+Creates HTML output with precise text measurement for accurate chord positioning.
+
+```javascript
+const formatter = new ChordSheetJS.MeasuredHtmlFormatter();
+const disp = formatter.format(song);
+```
+
+#### Capo
+
+By default, a `{capo}` directive is informational only: the chords are rendered exactly as written, because a
+capo tells the player which shapes to play, not which chords sound. Set `decapo: true` to eliminate the capo
+instead: all chords are transposed up by the capo amount, the `{key}` directive is updated to the sounding key
+and the `{capo}` directive is dropped.
+
+```javascript
+// {key: A}, {capo: 1}, [A]This is an [F#m]example
+new ChordSheetJS.TextFormatter().format(song);
+// A          F#m
+
+new ChordSheetJS.TextFormatter({ decapo: true }).format(song);
+// A#         Gm
+```
+
+### Layout Engine
+
+The `PdfFormatter` and `MeasuredHtmlFormatter` are powered by a layout engine that handles text measurement
+and precise positioning of chords above lyrics. The layout engine uses measurers to calculate text dimensions:
+
+- `DomMeasurer` - Measures text using the browser's DOM
+- `CanvasMeasurer` - Measures text using HTML Canvas
+- `JsPdfMeasurer` - Measures text using jsPDF (for PDF output, available from `chordsheetjs/pdf`)
+
+These are used internally by the measurement-based formatters but can also be accessed directly for advanced use cases.
+
+Token fonts are optional and inherit from the final configured chord font. Existing configurations that only set
+`fonts.chord` continue to apply to barlines, instructions, and no-chord markers. Rhythm symbols use the chord font with
+a default weight of `500`; the exact single barline `|` uses the same lighter font role. Optional overrides can be
+provided without duplicating the complete chord font:
+
+```javascript
+const formatter = new PdfFormatter({
+  fonts: {
+    chord: { name: 'Helvetica', style: 'bold', size: 13, weight: 700, color: '#000' },
+    instruction: { inherit: 'chord', style: 'italic' },
+    barline: { inherit: 'chord' },
+  },
+});
+```
+
+Font inheritance is resolved after defaults and user configuration are merged, so later `fonts.chord` overrides also
+flow through to token fonts.
+
+### Generate a song map
+
+A song map is the ordered list of section occurrences that describes in which order a song is performed. It can be
+generated from the recognized sections of a linear chart. Generating a song map does not change the song.
+
+```javascript
+const song = new ChordProParser().parse(chordSheet);
+const songMap = SongMapGenerator.generate(song);
+
+songMap.toString();
+// 'V1 C1 V2 C1'
+
+songMap.sections.map((section) => [section.token, section.displayLabel]);
+// [['V1', 'Verse 1'], ['C1', 'Chorus'], ['V2', 'Verse 2']]
+
+songMap.occurrences.map((occurrence) => [occurrence.index, occurrence.token, occurrence.origin]);
+// [[0, 'V1', 'source'], [1, 'C1', 'source'], [2, 'V2', 'source'], [3, 'C1', 'recall']]
+```
+
+Every occurrence refers to one section, so the same section can occur multiple times. Sections are identified by
+section type, label and content: a repeated block with exactly equal content is another occurrence of the same
+section, a block with a conflicting label is a new section.
+
+Recognized repeat instructions (`2x`, `x2`, `(2x)`, `Repeat 2x`, `Repeat 2 times`) in a section label or in a comment
+inside a section become explicit occurrences. The instruction itself is preserved in the label:
+
+```javascript
+// {start_of_chorus: Chorus (2x)}
+songMap.toString();
+// 'C1 C1'
+
+songMap.occurrences.map((occurrence) => occurrence.origin);
+// ['source', 'repeat']
+```
+
+Instructions that do not describe a finite number of performances (`0x`, `-1x`, `1.5x`, `repeat until cue`) and
+instructions that do not identify one occurrence do not create occurrences; they report a diagnostic.
+
+When generation cannot resolve something, it reports a diagnostic instead of guessing:
+
+```javascript
+songMap.diagnostics.map((diagnostic) => [diagnostic.type, diagnostic.message]);
+// [['missing_recall_target', 'A chorus recall has no preceding chorus to refer to']]
+```
+
+### Read and write a flow directive
+
+A song map can be stored in the chart itself with the OnSong `{flow: ...}` directive. Both the shorthand
+(`V1 C V2 C`) and the comma separated longhand (`Verse 1, Chorus, Verse 2, Chorus`) are read; items can refer to a
+section token, a section label or an OnSong style label abbreviation.
+
+```javascript
+const song = new ChordProParser().parse(chordSheet);
+const songMap = FlowDirective.parse(song);
+// null when the song has no flow directive
+
+songMap.toString();
+// 'C1 V1 C1 B1 C1'
+
+FlowDirective.format(songMap);
+// '{flow: C1 V1 C1 B1 C1}'
+```
+
+A repeat in a flow must be marked as one, either with parentheses or with the word `repeat`:
+`Verse 1, Chorus, (Repeat 2x)` renders the chorus twice. A reference that does not resolve to exactly one section
+does not become an occurrence; it reports an `invalid_reference` or `ambiguous_reference` diagnostic. Items that are
+not section references, such as OnSong page breaks and transpose instructions, report `unsupported_flow_item`.
+
+### Serialize/deserialize
+
+Chord sheets (`Song`s) can be serialized to plain JavaScript objects, which can be converted to JSON, XML etc by
+third-party libraries. The serialized object can also be deserialized back into a `Song`.
+
+```javascript
+const serializedSong = new ChordSheetSerializer().serialize(song);
+const deserialized = new ChordSheetSerializer().deserialize(serializedSong);
+```
+
+### Add styling
+
+The HTML formatters (HtmlTableFormatter and HtmlDivFormatter) can provide basic CSS to help with styling the output:
+
+```javascript
+HtmlTableFormatter.cssString();
+// .paragraph {
+//   margin-bottom: 1em;
+// }
+
+HtmlTableFormatter.cssString('.chordSheetViewer');
+// .chordSheetViewer .paragraph {
+//   margin-bottom: 1em;
+// }
+
+HtmlTableFormatter.cssObject();
+// '.paragraph': {
+//   marginBottom: '1em'
+// }
+```
+
+### Change chord notation (transcoding)
+
+ChordSheetJS can render the chords of a sheet in a different notation system than the one they were written in.
+This is controlled with the `{chord_style}` directive, in combination with the song `{key}`.
+
+Four notation styles are supported:
+
+| Style     | Description                          | Example (key of C)        |
+|:--------- |:------------------------------------ |:------------------------- |
+| `symbol`  | Letter notation (the default)        | `C`, `Dm`, `F`, `G`, `Am` |
+| `solfege` | Solfège / romance-language notation  | `Do`, `Rem`, `Fa`, `Sol`  |
+| `numeral` | Roman numeral / functional notation  | `I`, `ii`, `IV`, `V`, `vi`|
+| `number`  | Nashville number notation            | `1`, `2m`, `4`, `5`, `6m` |
+
+The `symbol` and `solfege` styles are absolute (they name an actual pitch), while `numeral` and `number` are relative
+to the key. Because of that, a song `{key}` is required to convert between an absolute and a relative style. Conversion
+works in every direction: the chords in the source sheet may be written in any of the four styles.
+
+```javascript
+const chordSheet = `
+{key: C}
+{chord_style: numeral}
+
+Let it [Am]be, let it [F]be, let it [C]be
+[C]Whisper words of [G]wisdom, let it [F]be`.substring(1);
+
+const song = new ChordSheetJS.ChordProParser().parse(chordSheet);
+new ChordSheetJS.TextFormatter().format(song);
+// Am -> vi, F -> IV, C -> I, G -> V
+```
+
+Using `{chord_style: number}` on the same sheet would render `Am` as `6m`, `F` as `4`, `C` as `1` and `G` as `5`.
+
+Because conversion is bidirectional, a sheet written in Roman numerals can be rendered as chord symbols by combining a
+concrete `{key}` with `{chord_style: symbol}`:
+
+```javascript
+const chordSheet = `
+{key: C}
+{chord_style: symbol}
+
+[I] [ii] [iii] [IV] [V] [vi] [vii]`.substring(1);
+
+const song = new ChordSheetJS.ChordProParser().parse(chordSheet);
+new ChordSheetJS.TextFormatter().format(song);
+// I -> C, ii -> Dm, iii -> Em, IV -> F, V -> G, vi -> Am, vii -> Bm
+```
+
+The `TextFormatter`, `HtmlTableFormatter`, `HtmlDivFormatter` and `ChordsOverWordsFormatter` apply `{chord_style}`
+automatically. The `ChordProFormatter` preserves the original chord notation by default (so a round-trip stays
+lossless); pass `applyChordStyle: true` to have it convert the chords as well:
+
+```javascript
+new ChordSheetJS.ChordProFormatter({ applyChordStyle: true }).format(song);
+```
+
+You can also convert a single chord programmatically, without a sheet, using the `Chord` methods
+(see [Parsing and modifying chords](#parsing-and-modifying-chords) below), e.g. `Chord.parse('2/4').toChordSymbol('E')`.
+
+### Semantic chord-line token classes
+
+Chord-line tokens use semantic classes instead of the `.chord` class:
+
+- `.rhythm-symbol` with variants such as `.rhythm-symbol-continuation`
+- `.barline` with variants such as `.barline-single` and `.barline-repeat-end`
+- `.instruction` with `.instruction-repeat-count`
+- `.no-chord` with `.no-chord-marker`
+
+This class distinction is a breaking styling change for consumers that previously selected all chord-row content via
+`.chord`. Add the semantic classes to existing selectors when those tokens should retain chord-like presentation.
+The legacy `ChordLyricsPair#isRhythmSymbol` property now applies only to rhythm symbols; use `tokenKind` and
+`tokenVariant` when handling barlines, instructions, or no-chord markers.
+
+### Parsing and modifying chords
+
+```javascript
+import { Chord } from 'chordsheetjs';
+```
+
+#### Parse
+
+```javascript
+const chord = Chord.parse('Ebsus4/Bb');
+```
+
+Parse numeric chords (Nashville system):
+
+```javascript
+const chord = Chord.parse('b1sus4/#3');
+```
+
+#### Display with #toString
+
+Use #toString() to convert the chord to a chord string (eg Dsus/F#)
+
+```javascript
+const chord = Chord.parse('Ebsus4/Bb');
+chord.toString(); // --> "Ebsus4/Bb"
+```
+
+#### Clone
+
+```javascript
+var chord2 = chord.clone();
+```
+
+#### Normalize
+
+Normalizes keys B#, E#, Cb and Fb to C, F, B and E
+
+```javascript
+const chord = Chord.parse('E#/B#');
+normalizedChord = chord.normalize();
+normalizedChord.toString(); // --> "F/C"
+```
+
+#### ~~Switch modifier~~
+
+***Deprecated***
+
+Convert # to b and vice versa
+
+```javascript
+const chord = parseChord('Eb/Bb');
+const chord2 = chord.switchModifier();
+chord2.toString(); // --> "D#/A#"
+```
+
+#### Use specific modifier
+
+Set the chord to a specific modifier (# or b)
+
+```javascript
+const chord = Chord.parse('Eb/Bb');
+const chord2 = chord.useModifier('#');
+chord2.toString(); // --> "D#/A#"
+```
+
+```javascript
+const chord = Chord.parse('Eb/Bb');
+const chord2 = chord.useModifier('b');
+chord2.toString(); // --> "Eb/Bb"
+```
+
+#### Transpose up
+
+```javascript
+const chord = Chord.parse('Eb/Bb');
+const chord2 = chord.transposeUp();
+chord2.toString(); // -> "E/B"
+```
+
+#### Transpose down
+
+```javascript
+const chord = Chord.parse('Eb/Bb');
+const chord2 = chord.transposeDown();
+chord2.toString(); // -> "D/A"
+```
+
+#### Transpose
+
+```javascript
+const chord = Chord.parse('C/E');
+const chord2 = chord.transpose(4);
+chord2.toString(); // -> "E/G#"
+```
+
+```javascript
+const chord = Chord.parse('C/E');
+const chord2 = chord.transpose(-4);
+chord2.toString(); // -> "Ab/C"
+```
+
+#### Convert numeric chord to chord symbol
+
+```javascript
+const numericChord = Chord.parse('2/4');
+const chordSymbol = numericChord.toChordSymbol('E');
+chordSymbol.toString(); // -> "F#/A"
+```
+
+## Supported ChordPro directives
+
+All directives are parsed and are added to `Song.metadata`. The list below indicates whether formatters actually
+use those to change the generated output.
+
+:heavy_check_mark: = supported
+
+:clock2: = will be supported in a future version
+
+:heavy_multiplication_x: = currently no plans to support it in the near future
+
+### Meta-data directives
+
+| Directive        | Support            |
+|:---------------- |:------------------:|
+| title (short: t) | :heavy_check_mark: |
+| subtitle         | :heavy_check_mark: |
+| artist           | :heavy_check_mark: |
+| composer         | :heavy_check_mark: |
+| lyricist         | :heavy_check_mark: |
+| copyright        | :heavy_check_mark: |
+| album            | :heavy_check_mark: |
+| year             | :heavy_check_mark: |
+| key              | :heavy_check_mark: |
+| time             | :heavy_check_mark: |
+| tempo            | :heavy_check_mark: |
+| duration         | :heavy_check_mark: |
+| capo             | :heavy_check_mark: |
+| chord_style      | :heavy_check_mark: |
+| meta             | :heavy_check_mark: |
+
+### Formatting directives
+
+| Directive                  | Support                  |
+|:-------------------------- |:------------------------:|
+| comment (short: c)         | :heavy_check_mark:       |
+| comment_italic (short: ci) | :heavy_multiplication_x: |
+| comment_box (short: cb)    | :heavy_multiplication_x: |
+| chorus                     | :heavy_multiplication_x: |
+| image                      | :heavy_multiplication_x: |
+
+### Environment directives
+
+| Directive                    | Support            |
+|:---------------------------- |:------------------:|
+| start_of_chorus (short: soc) | :heavy_check_mark: |
+| end_of_chorus (short: eoc)   | :heavy_check_mark: |
+| start_of_verse               | :heavy_check_mark: |
+| end_of_verse                 | :heavy_check_mark: |
+| start_of_tab (short: sot)    | :heavy_check_mark: |
+| end_of_tab (short: eot)      | :heavy_check_mark: |
+| start_of_grid                | :heavy_check_mark: |
+| end_of_grid                  | :heavy_check_mark: |
+
+### Chord diagrams
+
+| Directive | Support            |
+|:--------- |:------------------:|
+| define    | :heavy_check_mark: |
+| chord     | :heavy_check_mark: |
+
+### Fonts, sizes and colours
+
+| Directive   | Support                  |
+|:----------- |:------------------------:|
+| textfont    | :heavy_check_mark:       |
+| textsize    | :heavy_check_mark:       |
+| textcolour  | :heavy_check_mark:       |
+| chordfont   | :heavy_check_mark:       |
+| chordsize   | :heavy_check_mark:       |
+| chordcolour | :heavy_check_mark:       |
+| tabfont     | :heavy_multiplication_x: |
+| tabsize     | :heavy_multiplication_x: |
+| tabcolour   | :heavy_multiplication_x: |
+
+### Output related directives
+
+| Directive                      | Support                  |
+|:------------------------------ |:------------------------:|
+| new_page (short: np)           | :heavy_multiplication_x: |
+| new_physical_page (short: npp) | :heavy_multiplication_x: |
+| column_break (short: cb)       | :heavy_multiplication_x: |
+| grid (short: g)                | :heavy_multiplication_x: |
+| no_grid (short: ng)            | :heavy_multiplication_x: |
+| titles                         | :heavy_multiplication_x: |
+| columns (short: col)           | :heavy_multiplication_x: |
+
+### Custom extensions
+
+| Directive | Support            |
+|:--------- |:------------------:|
+| x_        | :heavy_check_mark: |
+
+## API docs
+
+For more information, see the [API docs](https://martijnversluis.github.io/ChordSheetJS/).
