@@ -10,23 +10,355 @@ import { cloneBarWithNewIds } from './edit.js';
 
 const issue = (location, message) => ({ location, message });
 
+/*
+ * AI 输出经常长得像 JSON，但不一定是 JSON：代码围栏、注释、尾逗号、单引号、
+ * 中文引号、未加引号的键名，以及把 JSON 再包进 data/result 字段都很常见。
+ * 这里做的是输入层修复，修复后仍然走下面的严格歌曲校验；不在解析器里猜和弦。
+ */
+function readLooseString(source, start) {
+  const opener = source[start];
+  const closer = opener === '“' ? '”' : opener === '‘' ? '’' : opener;
+  let value = '';
+  for (let index = start + 1; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === closer) return { value, end: index + 1 };
+    if (char === '\\') {
+      const next = source[++index];
+      if (next === undefined) throw new Error('字符串转义没有结束。');
+      const escapes = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', '0': '\0' };
+      if (escapes[next] !== undefined) value += escapes[next];
+      else if (next === 'u' && /^[0-9a-f]{4}$/i.test(source.slice(index + 1, index + 5))) {
+        value += String.fromCharCode(parseInt(source.slice(index + 1, index + 5), 16));
+        index += 4;
+      } else if (next === 'x' && /^[0-9a-f]{2}$/i.test(source.slice(index + 1, index + 3))) {
+        value += String.fromCharCode(parseInt(source.slice(index + 1, index + 3), 16));
+        index += 2;
+      } else if (next === '\r' || next === '\n') {
+        if (next === '\r' && source[index + 1] === '\n') index += 1;
+      } else value += next;
+    } else value += char;
+  }
+  throw new Error('字符串没有闭合。');
+}
+
+function normalizeLooseJson(source, repairs) {
+  let output = '';
+  for (let index = 0; index < source.length;) {
+    const char = source[index];
+    if (char === '/' && source[index + 1] === '/') {
+      repairs.push('已移除 JSON 注释。');
+      index += 2;
+      while (index < source.length && source[index] !== '\n' && source[index] !== '\r') index += 1;
+      continue;
+    }
+    if (char === '/' && source[index + 1] === '*') {
+      repairs.push('已移除 JSON 块注释。');
+      const end = source.indexOf('*/', index + 2);
+      if (end < 0) throw new Error('JSON 块注释没有闭合。');
+      index = end + 2;
+      continue;
+    }
+    if (['"', '\'', '`', '“', '‘'].includes(char)) {
+      const parsed = readLooseString(source, index);
+      output += JSON.stringify(parsed.value);
+      if (char !== '"') repairs.push('已把非标准字符串引号转换成 JSON 引号。');
+      index = parsed.end;
+      continue;
+    }
+    output += char;
+    index += 1;
+  }
+  return output;
+}
+
+function skipJsonString(source, start) {
+  let index = start + 1;
+  while (index < source.length) {
+    if (source[index] === '\\') index += 2;
+    else if (source[index] === '"') return index + 1;
+    else index += 1;
+  }
+  return source.length;
+}
+
+function quoteBareKeys(source, repairs) {
+  let output = '';
+  for (let index = 0; index < source.length;) {
+    const char = source[index];
+    if (char === '"') {
+      const end = skipJsonString(source, index);
+      output += source.slice(index, end);
+      index = end;
+      continue;
+    }
+    if (char !== '{' && char !== ',') {
+      output += char;
+      index += 1;
+      continue;
+    }
+    output += char;
+    index += 1;
+    const whitespaceStart = index;
+    while (/\s/.test(source[index] ?? '')) index += 1;
+    output += source.slice(whitespaceStart, index);
+    if (source[index] === '"') continue;
+    const colon = source.indexOf(':', index);
+    const candidate = colon < 0 ? '' : source.slice(index, colon).trim();
+    if (candidate && /^[\p{L}\p{N}_$-]+$/u.test(candidate)) {
+      output += JSON.stringify(candidate);
+      repairs.push('已给未加引号的 JSON 键名补上引号。');
+      index = colon;
+    }
+  }
+  return output;
+}
+
+function replaceLooseLiterals(source, repairs) {
+  let output = '';
+  for (let index = 0; index < source.length;) {
+    if (source[index] === '"') {
+      const end = skipJsonString(source, index);
+      output += source.slice(index, end);
+      index = end;
+      continue;
+    }
+    const match = source.slice(index).match(/^(True|False|None|undefined|TRUE|FALSE|NULL)\b/);
+    if (match) {
+      const value = /^(?:True|TRUE)$/.test(match[1]) ? 'true' : /^(?:False|FALSE)$/.test(match[1]) ? 'false' : 'null';
+      output += value;
+      repairs.push(`已把 ${match[1]} 转换成 JSON 标准值。`);
+      index += match[1].length;
+      continue;
+    }
+    output += source[index++];
+  }
+  return output;
+}
+
+function quoteBareValues(source, repairs) {
+  let output = '';
+  for (let index = 0; index < source.length;) {
+    if (source[index] === '"') {
+      const end = skipJsonString(source, index);
+      output += source.slice(index, end);
+      index = end;
+      continue;
+    }
+    if (source[index] !== ':') {
+      output += source[index++];
+      continue;
+    }
+    output += ':';
+    index += 1;
+    while (/\s/.test(source[index] ?? '')) output += source[index++];
+    const first = source[index];
+    if (!first || ['"', '{', '[', '-', '+'].includes(first) || /\d/.test(first)) continue;
+    const endMatch = source.slice(index).match(/[\n\r,}\]]/);
+    const end = endMatch ? index + endMatch.index : source.length;
+    const candidate = source.slice(index, end).trim();
+    if (candidate && !/^(?:true|false|null)$/.test(candidate) && !candidate.includes(':') && /^[\p{L}\p{N}_$./+\-# ]+$/u.test(candidate)) {
+      const leading = source.slice(index, index + source.slice(index, end).search(/\S/));
+      output += leading + JSON.stringify(candidate);
+      repairs.push('已给未加引号的 JSON 字符串值补上引号。');
+      index = end - source.slice(index, end).match(/\s*$/)[0].length;
+    }
+  }
+  return output;
+}
+
+function removeTrailingCommas(source, repairs) {
+  const fixed = source.replace(/,(\s*[}\]])/g, '$1');
+  if (fixed !== source) repairs.push('已移除 JSON 尾逗号。');
+  return fixed;
+}
+
+function parseLooseJson(text) {
+  const source = text.trim().replace(/^\uFEFF/, '');
+  try { return { value: JSON.parse(source), repairs: [] }; } catch {
+    const repairs = [];
+    let fixed = normalizeLooseJson(source, repairs);
+    fixed = quoteBareKeys(fixed, repairs);
+    fixed = replaceLooseLiterals(fixed, repairs);
+    fixed = quoteBareValues(fixed, repairs);
+    fixed = removeTrailingCommas(fixed, repairs);
+    try { return { value: JSON.parse(fixed), repairs: [...new Set(repairs)] }; }
+    catch (error) { throw new Error(`JSON 无法自动修复：${error?.message ?? error}`); }
+  }
+}
+
+function extractBalancedJson(text) {
+  const results = [];
+  for (let start = 0; start < text.length; start += 1) {
+    if (!['{', '['].includes(text[start])) continue;
+    const stack = [];
+    let quote = null;
+    let escaped = false;
+    let comment = null;
+    for (let index = start; index < text.length; index += 1) {
+      const char = text[index];
+      const next = text[index + 1];
+      if (comment === 'line') { if (char === '\n' || char === '\r') comment = null; continue; }
+      if (comment === 'block') { if (char === '*' && next === '/') { comment = null; index += 1; } continue; }
+      if (quote) {
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if ((quote === '“' && char === '”') || (quote === '‘' && char === '’') || char === quote) quote = null;
+        continue;
+      }
+      if (char === '/' && next === '/') { comment = 'line'; index += 1; continue; }
+      if (char === '/' && next === '*') { comment = 'block'; index += 1; continue; }
+      if (['"', '\'', '`', '“', '‘'].includes(char)) { quote = char; continue; }
+      if (char === '{' || char === '[') stack.push(char);
+      else if (char === '}' || char === ']') {
+        const opening = stack.at(-1);
+        if ((char === '}' && opening !== '{') || (char === ']' && opening !== '[')) break;
+        stack.pop();
+        if (!stack.length) {
+          results.push(text.slice(start, index + 1));
+          start = index;
+          break;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+function looksLikeImportObject(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && (
+    value.song || value.content || value.abc || value.abcText || value.score || value.format || value.notation || value.measures || value.data || value.result || value.output || value.response || value.payload || value.json
+  ));
+}
+
+function codeBlocks(text) {
+  return [...text.matchAll(/```(?:json|json5|jsonc|chordpro|abc|text|plain|chordmark)?\s*\r?\n?([\s\S]*?)```/gi)].map((match) => match[1].trim()).filter(Boolean);
+}
+
+function firstValue(source, names) {
+  for (const name of names) if (source?.[name] !== undefined && source?.[name] !== null) return source[name];
+  return undefined;
+}
+
+function unwrapNestedObject(value, repairs) {
+  let current = value;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof current === 'string') {
+      try { current = parseLooseJson(current).value; repairs.push('已解析被再次包裹的 JSON 文本。'); continue; } catch { return current; }
+    }
+    if (!current || typeof current !== 'object' || Array.isArray(current)) return current;
+    if (current.song || current.content || current.abc || current.abcText || current.score || current.measures || current.notation || current.format) return current;
+    const nested = firstValue(current, ['data', 'result', 'output', 'response', 'payload', 'json', '谱子', '曲谱']);
+    if (nested === undefined) return current;
+    current = nested;
+    repairs.push('已展开 AI 返回的 data/result 外层包装。');
+  }
+  return current;
+}
+
+function normalizeContent(value) {
+  if (typeof value === 'string') return value.replace(/^```(?:abc|chordpro|chordmark|text)?\s*\r?\n?/i, '').replace(/\r?\n?```\s*$/i, '').trim();
+  if (Array.isArray(value)) return value.filter((item) => typeof item === 'string').join('\n');
+  if (value && typeof value === 'object') return normalizeContent(firstValue(value, ['abc', 'abcText', 'text', 'content', 'lines', '谱文', '内容']));
+  return '';
+}
+
+function enrichContent(content, notation, source, repairs) {
+  const title = firstValue(source, ['title', 'songTitle', '歌名', '歌曲名']);
+  const artist = firstValue(source, ['artist', 'author', 'composer', '作者', '歌手']);
+  const keyValue = firstValue(source, ['key', 'keySignature', '调号', '调式']);
+  const time = firstValue(source, ['time', 'timeSignature', 'meter', '拍号']);
+  const tempo = firstValue(source, ['tempo', 'bpm', '速度']);
+  const capo = firstValue(source, ['capo', 'capoFret', '变调夹']);
+  const key = typeof keyValue === 'object' ? `${keyValue.tonic ?? keyValue.root ?? ''}${keyValue.mode === 'minor' ? 'm' : ''}` : String(keyValue ?? '').replace(/\s+(?:major|minor|大调|小调)$/i, '');
+  const additions = [];
+  if (notation === 'abc') {
+    const lines = content.split(/\r?\n/);
+    const insert = (value, pattern, line) => { if (value !== undefined && value !== null && String(value) !== '' && !pattern.test(content)) additions.push(line); };
+    insert(title, /^T:/mi, `T:${String(title).replace(/[\r\n]/g, ' ')}`);
+    insert(artist, /^(?:C|A):/mi, `C:${String(artist).replace(/[\r\n]/g, ' ')}`);
+    insert(time, /^M:/mi, `M:${String(time)}`);
+    insert(tempo, /^Q:/mi, `Q:1/4=${Number(tempo) || String(tempo)}`);
+    insert(key, /^K:/mi, `K:${key}`);
+    if (capo !== undefined && capo !== null && !/^%%capo\s+/mi.test(content)) additions.push(`%%capo ${Number(capo) || 0}`);
+    if (!additions.length) return content;
+    const xIndex = lines.findIndex((line) => /^\s*X:\s*/i.test(line));
+    lines.splice(xIndex < 0 ? 0 : xIndex + 1, 0, ...additions);
+    repairs.push('已把 JSON 中的歌曲信息补入谱文头部。');
+    return lines.join('\n');
+  }
+  if (notation === 'chordpro') {
+    const add = (value, pattern, line) => { if (value !== undefined && value !== null && String(value) !== '' && !pattern.test(content)) additions.push(line); };
+    add(title, /^\{(?:title|t):/mi, `{title: ${String(title).replace(/[\r\n}]/g, ' ')}}`);
+    add(artist, /^\{(?:artist|composer|c):/mi, `{artist: ${String(artist).replace(/[\r\n}]/g, ' ')}}`);
+    add(key, /^\{key:/mi, `{key: ${key}}`);
+    add(time, /^\{time:/mi, `{time: ${time}}`);
+    add(tempo, /^\{(?:tempo|bpm):/mi, `{tempo: ${Number(tempo) || String(tempo)}}`);
+    if (capo !== undefined && capo !== null && !/^\{capo:/mi.test(content)) additions.push(`{capo: ${Number(capo) || 0}}`);
+    if (!additions.length) return content;
+    repairs.push('已把 JSON 中的歌曲信息补入谱文头部。');
+    return [...additions, content].join('\n');
+  }
+  return content;
+}
+
 function unwrap(input) {
   if (typeof input !== 'string' || !input.trim()) throw new Error('先粘贴 AI 返回的谱文，或选择一份谱文文件。');
   if (input.length > 500000) throw new Error('谱文过长，请一次导入一首歌。');
-  const blocks = [...input.matchAll(/```(?:json|chordpro|abc|text|plain|chordmark)?\s*\r?\n([\s\S]*?)```/gi)];
-  if (blocks.length > 1) throw new Error('发现多个代码块，请只复制一首歌的完整代码块。');
-  const text = (blocks[0]?.[1] ?? input).trim().replace(/^\uFEFF/, '');
-  if (!text.startsWith('{') || /^\{(?:title|t|key|artist|time|capo|start_)/i.test(text)) return { content: text, notation: null, issues: [] };
-  let obj;
-  try { obj = JSON.parse(text); } catch { throw new Error('JSON 格式不完整。请复制完整代码块，包括开头和结尾的大括号。'); }
-  if (obj?.song && obj.schemaVersion) return { project: text };
-  if (obj?.format !== 'qingpu-import' || ![1,2].includes(obj.version)) throw new Error('这份导入格式尚不支持，请使用页面提供的识谱提示词。');
-  if (!['chordpro', 'chordmark', 'abc'].includes(obj.notation) || typeof obj.content !== 'string') throw new Error('谱文格式或 content 字段缺失，请重新复制完整结果。');
-  if (obj.issues !== undefined && (!Array.isArray(obj.issues) || obj.issues.length > 300 || obj.issues.some((item) => !item || typeof item.location !== 'string' || typeof item.message !== 'string'))) throw new Error('待确认信息的格式不正确。');
-  if (obj.version === 2 && !Array.isArray(obj.measures)) throw new Error('缺少连续小节编号 measures，请按当前提示词重新识别。');
-  if(obj.timing!==undefined && !['exact','practice'].includes(obj.timing))throw new Error('timing 应为 exact 或 practice。');
-  if(obj.hasMelody!==undefined && typeof obj.hasMelody!=='boolean')throw new Error('hasMelody 应为布尔值。');
-  return { content: obj.content, notation: obj.notation, issues: obj.issues ?? [], measures:obj.measures, version:obj.version, hasMelody:obj.hasMelody, timing:obj.timing };
+  const blocks = codeBlocks(input);
+  if (blocks.length > 1) throw new Error('发现多个代码块，请把它们一起粘贴到导入框，或一次只检查一首歌。');
+  const text = (blocks[0] ?? input).trim().replace(/^\uFEFF/, '');
+  const repairs = [];
+  if (/^\{(?:title|t|key|artist|time|capo|start_)/i.test(text)) return { content: text, notation: null, issues: [], repairs };
+  const looksJson = text.startsWith('{') || text.startsWith('[') || /\b(?:format|notation|content|measures|schemaVersion)\s*:/i.test(text);
+  if (!looksJson) return { content: text, notation: null, issues: [], repairs };
+
+  let parsed;
+  try { parsed = parseLooseJson(text); }
+  catch (error) { throw new Error(error.message || 'JSON 无法自动修复，请复制完整代码块。'); }
+  let obj = parsed.value;
+  repairs.push(...parsed.repairs);
+  obj = unwrapNestedObject(parsed.value, repairs);
+  if (Array.isArray(obj)) {
+    if (obj.length !== 1) throw new Error('JSON 顶层是数组，请把每份识谱结果分别放在数组项中，或直接粘贴多个 JSON 对象。');
+    obj = unwrapNestedObject(obj[0], repairs);
+  }
+  if (obj?.song && obj.schemaVersion !== undefined) {
+    const schemaVersion = Number(obj.schemaVersion);
+    return { project: JSON.stringify({ ...obj, schemaVersion: Number.isInteger(schemaVersion) ? schemaVersion : obj.schemaVersion }), repairs };
+  }
+  if (obj?.song?.sections) return { project: JSON.stringify({ schemaVersion: 3, song: obj.song }), repairs: [...repairs, '已为缺少 schemaVersion 的工程补上当前版本号。'] };
+  if (obj?.sections && Array.isArray(obj.sections)) return { project: JSON.stringify({ schemaVersion: 3, song: obj }), repairs: [...repairs, '已识别为直接粘贴的歌曲对象并补上工程外壳。'] };
+  if (!looksLikeImportObject(obj)) throw new Error('没有找到 qingpu-import、ABC 谱文或工程文件。');
+
+  const format = String(firstValue(obj, ['format', 'type', '格式']) ?? '').toLowerCase();
+  const rawVersion = firstValue(obj, ['version', 'formatVersion', '版本']);
+  const versionMatch = String(rawVersion ?? '').match(/[12]/);
+  const version = versionMatch ? Number(versionMatch[0]) : 2;
+  if (rawVersion !== undefined && !versionMatch) repairs.push('未识别版本号，按当前导入格式继续处理。');
+  if (format && format !== 'qingpu-import' && !/qingpu|score|music|谱/i.test(format)) repairs.push(`已兼容 AI 返回的格式名称「${format}」。`);
+  let content = normalizeContent(firstValue(obj, ['content', 'abc', 'abcText', 'score', 'scoreText', '谱文', '乐谱', 'text', '文本']));
+  if (!content) throw new Error('谱文格式或 content 字段缺失，已尝试识别常见字段名仍未找到谱文。');
+  const notationRaw = firstValue(obj, ['notation', 'formatType', '谱面格式']);
+  const notationText = String(notationRaw ?? '').toLowerCase();
+  const notation = ['chordpro', 'chordmark', 'abc'].includes(notationText)
+    ? notationText
+    : (/^\s*(?:X:\s*\d+|T:)/m.test(content) ? 'abc' : /\{(?:title|t|key|start_of_|capo)[:}]/i.test(content) || /\[[A-G][^\]]*\]/.test(content) ? 'chordpro' : 'chordmark');
+  if (notationRaw === undefined || !['chordpro', 'chordmark', 'abc'].includes(notationText)) repairs.push(`已自动识别谱文格式为 ${notation}。`);
+  content = enrichContent(content, notation, obj, repairs);
+  const rawIssues = firstValue(obj, ['issues', 'warnings', '待确认', '问题']);
+  const issues = Array.isArray(rawIssues)
+    ? rawIssues.filter((item) => item && typeof item === 'object').map((item) => ({ location: String(item.location ?? item.loc ?? item.position ?? '待核对'), message: String(item.message ?? item.text ?? item.reason ?? '请核对原谱。') })).slice(0, 300)
+    : typeof rawIssues === 'string' ? [issue('AI 返回', rawIssues)] : [];
+  if (rawIssues !== undefined && !Array.isArray(rawIssues) && typeof rawIssues !== 'string') repairs.push('待确认信息格式异常，已转换为可显示的空列表。');
+  const hasMelodyRaw = firstValue(obj, ['hasMelody', 'has_melody', 'melody', 'hasNumberedNotes', '有简谱']);
+  const hasMelody = typeof hasMelodyRaw === 'boolean' ? hasMelodyRaw : typeof hasMelodyRaw === 'string' ? /^(true|yes|1|有|是)$/i.test(hasMelodyRaw.trim()) : hasMelodyRaw === undefined ? undefined : Boolean(hasMelodyRaw);
+  if (hasMelodyRaw !== undefined && typeof hasMelodyRaw !== 'boolean') repairs.push('已把 hasMelody 转换成布尔值。');
+  const timingRaw = firstValue(obj, ['timing', 'rhythm', '节奏']);
+  const timing = ['exact', 'practice'].includes(String(timingRaw).toLowerCase()) ? String(timingRaw).toLowerCase() : undefined;
+  if (timingRaw !== undefined && !timing) repairs.push('未识别 timing，交给谱文实际时值判断。');
+  const measures = firstValue(obj, ['measures', 'measure', 'bars', '小节', '小节表', 'measureMap']);
+  if (version === 2 && measures === undefined) repairs.push('缺少 measures，已按谱文实际小节继续导入；小节编号需要导入后核对。');
+  return { content, notation, issues, repairs, measures, version, hasMelody, timing };
 }
 
 function header(text, issues) {
@@ -237,15 +569,51 @@ async function abcSong(content, issues) {
   return createSong({ title: tune.metaText?.title ?? '导入的简谱', artist: tune.metaText?.composer ?? '', key, capo, bpm, timeSignature, timing: 'exact', importIssues: issues, sections, layout: { barsPerRow: 4, displayLines: ['chord','degree'], showMelody: true, numberedKey: key.mode === 'minor' ? Note.pitchClass(Note.transpose(key.tonic, '3m')) : key.tonic } });
 }
 
+function normalizeMeasureTable(raw, barCount, issues) {
+  if (!Array.isArray(raw)) {
+    issues.push(issue('小节编号', 'measures 不是数组，已忽略编号表并按谱文继续导入。'));
+    return null;
+  }
+  if (!raw.length) return null;
+  const firstNumber = raw.map((item) => Number(item?.number ?? item?.bar ?? item?.小节号)).find((number) => Number.isInteger(number) && number > 0) ?? 1;
+  if (raw.length !== barCount) issues.push(issue('小节编号', `编号表有 ${raw.length} 项，谱文实际有 ${barCount} 小节，已按小节顺序补齐或截断。`));
+  return Array.from({ length: barCount }, (_, index) => {
+    const original = raw[index] && typeof raw[index] === 'object' ? raw[index] : {};
+    const actual = Number(original.number ?? original.bar ?? original.小节号);
+    const number = firstNumber + index;
+    if (actual !== number) issues.push(issue(`第 ${number} 小节`, `原编号 ${original.number ?? original.bar ?? '缺失'} 不连续，已按顺序修正为 ${number}。`));
+    const value = { ...original, number };
+    const rawSyllables = firstValue(original, ['syllables', 'lyrics', 'words', '逐字', '歌词']);
+    if (rawSyllables !== undefined) {
+      const list = Array.isArray(rawSyllables) ? rawSyllables : typeof rawSyllables === 'string' ? Array.from(rawSyllables).map((text) => ({ text, note: null })) : [rawSyllables];
+      value.syllables = list.map((word) => {
+        if (typeof word === 'string') return { text: word, note: null };
+        const item = word && typeof word === 'object' ? word : {};
+        const noteSource = item.note ?? (item.noteIndex === undefined ? item.index : Number(item.noteIndex) + 1);
+        const note = noteSource === undefined || noteSource === null || noteSource === '' ? null : Number(noteSource);
+        const xSource = item.x ?? item.position ?? item.pos;
+        const x = xSource === undefined || xSource === null || xSource === '' ? undefined : Number(xSource);
+        return { text: String(item.text ?? item.lyric ?? item.word ?? ''), note: Number.isFinite(note) ? note : null, ...(x !== undefined ? { x } : {}) };
+      });
+    }
+    for (const prop of ['repeatStart', 'repeatEnd', 'ending']) {
+      if (value[prop] === undefined) continue;
+      if (prop === 'repeatStart') value[prop] = typeof value[prop] === 'string' ? /^(?:true|yes|1|是)$/i.test(value[prop]) : Boolean(value[prop]);
+      else value[prop] = Number(value[prop]);
+    }
+    return value;
+  });
+}
+
 async function parseOneImportedSong(text, options = {}) {
   try {
     const unwrapped = unwrap(text);
     if (unwrapped.project) {
       const result = parseProject(unwrapped.project, options);
-      return result.ok ? { ok: true, song: result.value, issues: result.value.importIssues ?? [] } : { ok: false, message: result.message };
+      return result.ok ? { ok: true, song: result.value, issues: [...(unwrapped.repairs ?? []).map((message) => issue('自动修正', message)), ...(result.value.importIssues ?? [])] } : { ok: false, message: result.message };
     }
     const notation = unwrapped.notation ?? (/^X:\s*\d+/m.test(unwrapped.content) ? 'abc' : /\{(?:title|t|key|start_of_|capo)[:}]/i.test(unwrapped.content) || /\[[A-G][^\]]*\]/.test(unwrapped.content) ? 'chordpro' : 'chordmark');
-    const issues = unwrapped.issues.map((item) => ({ ...item }));
+    const issues = [...(unwrapped.repairs ?? []).map((message) => issue('自动修正', message)), ...unwrapped.issues.map((item) => ({ ...item }))];
     let song = notation === 'abc' ? await abcSong(unwrapped.content, issues) : await chordTextSong(unwrapped.content, notation, issues, options);
     const bars=song.sections.flatMap((section)=>section.bars);
     if(unwrapped.hasMelody===false){
@@ -254,10 +622,10 @@ async function parseOneImportedSong(text, options = {}) {
       song.layout.showMelody=false;
     }
     if(unwrapped.timing)song.timing=unwrapped.timing;
-    if(unwrapped.measures){
-      if(unwrapped.measures.length!==bars.length)throw new Error(`编号表有 ${unwrapped.measures.length} 个小节，谱文实际解析出 ${bars.length} 个，请核对每小节边界。`);
-      unwrapped.measures.forEach((measure,index)=>{
-        if(!measure || !Number.isInteger(measure.number) || measure.number<1 || (index>0 && measure.number!==unwrapped.measures[index-1].number+1))throw new Error('小节编号必须连续递增，不能重复或缺号。');
+    const measures = unwrapped.measures === undefined ? null : normalizeMeasureTable(unwrapped.measures, bars.length, issues);
+    if(measures){
+      measures.forEach((measure,index)=>{
+        if(!measure || !Number.isInteger(measure.number) || measure.number<1 || (index>0 && measure.number!==measures[index-1].number+1))throw new Error('小节编号必须连续递增，不能重复或缺号。');
         const bar=bars[index];bar.sourceNumber=measure.number;
         for(const prop of ['repeatStart','repeatEnd','ending'])if(measure[prop]!==undefined)bar[prop]=measure[prop];
         if(measure.syllables!==undefined){
@@ -279,28 +647,36 @@ async function parseOneImportedSong(text, options = {}) {
     const checked = validateSongShape(song);
     if (!checked.ok) throw new Error(checked.errors.map((e) => `${e.path}：${e.message}`).slice(0, 3).join('\n'));
     song.importSource = { notation, content: unwrapped.content };
-    return { ok: true, song, issues, numbered:Boolean(unwrapped.measures), startBar:bars[0]?.sourceNumber, endBar:bars.at(-1)?.sourceNumber };
+    return { ok: true, song, issues, numbered:Boolean(measures), startBar:bars[0]?.sourceNumber, endBar:bars.at(-1)?.sourceNumber };
   } catch (error) { return { ok: false, message: error.message }; }
 }
 
 /** Accept several copied AI responses, including adjacent JSON objects. */
 function importParts(text) {
   if(typeof text!=='string'||text.length>1500000)throw new Error('一次导入的谱文过长，请分批追加。');
-  const blocks=[...text.matchAll(/```(?:json|chordpro|abc|text|plain|chordmark)?\s*\r?\n([\s\S]*?)```/gi)];
-  if(blocks.length)return blocks.map((block)=>block[1]);
+  const blocks=codeBlocks(text);
+  const expand=(parts)=>parts.flatMap((part)=>{
+    try{
+      const value=parseLooseJson(part).value;
+      if(Array.isArray(value) && value.length && value.every((item)=>looksLikeImportObject(item)))return value.map((item)=>JSON.stringify(item));
+    }catch{}
+    return [part];
+  });
+  if(blocks.length)return expand(blocks);
   const source=text.trim();
-  if(!source.startsWith('{') || /^\{(?:title|t|key|artist|time|capo|start_)/i.test(source))return [source];
-  const parts=[];let start=0,depth=0,quoted=false,escape=false;
-  for(let i=0;i<source.length;i++){
-    const c=source[i];
-    if(!depth){if(/\s/.test(c))continue;if(c!=='{')throw new Error('多段 JSON 之间只能留空行，请复制完整代码块。');start=i;}
-    if(quoted){if(escape)escape=false;else if(c==='\\')escape=true;else if(c==='"')quoted=false;continue;}
-    if(c==='"')quoted=true;else if(c==='{')depth++;else if(c==='}'){
-      depth--;if(depth===0)parts.push(source.slice(start,i+1));
-    }
+  const candidates=extractBalancedJson(source).filter((part)=>{
+    try{
+      const value=parseLooseJson(part).value;
+      return looksLikeImportObject(value) || Array.isArray(value);
+    }catch{return false;}
+  });
+  if(candidates.length){
+    const last = source.lastIndexOf(candidates.at(-1));
+    const trailing = source.slice(last + candidates.at(-1).length).trim();
+    if (/^[\[{]/.test(trailing)) throw new Error('发现最后一份 JSON 不完整，请补全后再检查。');
+    return expand(candidates);
   }
-  if(depth||quoted)throw new Error('最后一段 JSON 不完整，请补全后再检查。');
-  return parts;
+  return [source];
 }
 
 export function appendImportedSong(target, incoming, { numbered=false }={}) {

@@ -43,6 +43,54 @@ test('ABC 导入提取单声部音高、和弦、歌词和精确时值', async (
   assert.equal(result.song.sections[0].bars[0].melody[0].lyric, '微');
 });
 
+test('AI 返回 JSON5 风格代码时自动修复并保留待核对提示', async () => {
+  const source = `识别结果如下：
+\`\`\`json
+{
+  format: 'qingpu-import', // 模型加的说明
+  version: '2',
+  notation: 'abc',
+  has_melody: 'true',
+  timing: 'exact',
+  content: \`X:1
+T:修复练习
+M:4/4
+L:1/4
+Q:1/4=76
+K:C
+P:主歌
+"C" C D E F |
+w: 一 闪 一 闪\`,
+  measure: [{bar: '1', lyrics: [{lyric: '一', noteIndex: '0'}, {text: '闪', note: '2'}, {text: '一', note: 3}, {text: '闪', note: 4}]}],
+  issues: [{location: '第1小节', message: '请核对字位'},],
+}
+\`\`\`
+以上是识别结果。`;
+  const result = await parseImportedSong(source, { windowObject });
+  assert.equal(result.ok, true, result.ok ? '' : result.message);
+  assert.equal(result.song.title, '修复练习');
+  assert.equal(result.song.sections[0].bars[0].sourceNumber, 1);
+  assert.deepEqual(result.song.sections[0].bars[0].alignment.words.map((word) => word.text), ['一', '闪', '一', '闪']);
+  assert.equal(result.issues.some((item) => item.location === '自动修正'), true);
+  assert.equal(result.issues.some((item) => item.location === '第1小节'), true);
+});
+
+test('AI 把结果包在 data 里、前后带说明文字时仍能识别', async () => {
+  const payload = {
+    data: {
+      format: 'qingpu-import', version: 2, notation: 'abc', hasMelody: false, timing: 'practice',
+      abc: 'X:1\nT:包装练习\nM:4/4\nL:1/4\nK:C\n"C" z2 "Am" z2 |',
+      bars: [{ number: '7', syllables: [{ text: '微', note: null, x: '0.2' }], }],
+    },
+  };
+  const result = await parseImportedSong(`模型回答：\n${JSON.stringify(payload)}\n结束`, { windowObject });
+  assert.equal(result.ok, true, result.ok ? '' : result.message);
+  assert.equal(result.song.title, '包装练习');
+  assert.equal(result.song.layout.showMelody, false);
+  assert.equal(result.song.sections[0].bars[0].sourceNumber, 7);
+  assert.equal(result.song.sections[0].bars[0].alignment.words[0].x > 0, true);
+});
+
 test('ChordPro / ABC 文本导出保留可编辑入口', () => {
   const song = {
     schemaVersion: 3,
