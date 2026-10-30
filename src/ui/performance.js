@@ -39,7 +39,7 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
   try { prefs = normalizePerformancePrefs(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
   catch { prefs = normalizePerformancePrefs(); }
   let pages = [], pageMap = new Map(), pageIndex = 0, current = null, held = false;
-  let ui, flashTimer, frame, targetScroll = null, lastScroll = 0;
+  let ui, flashTimer, frame, targetScroll = null, lastScroll = 0, locked = false;
   const automatic = () => isPresent() && prefs.flip !== 'manual' && !held && (getSong().timing !== 'practice' || prefs.practice);
   const inset = () => top.getBoundingClientRect().height + (shell.querySelector('.stage-controls')?.getBoundingClientRect().height || 0) + 12;
 
@@ -63,6 +63,15 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
     const auto = ui.querySelector('.live-flip-label');
     auto.textContent = prefs.flip === 'manual' ? '手动翻谱' : prefs.flip === 'page' ? '按页翻谱' : '跟随翻谱';
     auto.classList.toggle('is-active', prefs.flip !== 'manual');
+  }
+  function toggleLock() {
+    locked = !locked;
+    shell.classList.toggle('performance-locked', locked);
+    const control = ui?.querySelector('.performance-lock');
+    if (control) {
+      control.textContent = locked ? '解锁' : '演出锁';
+      control.setAttribute('aria-label', locked ? '解锁演出界面' : '锁定演出界面');
+    }
   }
   function measure() {
     if (!isPresent()) return;
@@ -191,6 +200,7 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
       withIcon(button('',{class:'icon-button',ariaLabel:'上一页',data:{pageDirection:-1},onClick:()=>turnPage(pageIndex-1,true)}),'left'),
       el('span',{class:'live-page-count',text:'1 / 1'}),
       withIcon(button('',{class:'icon-button',ariaLabel:'下一页',data:{pageDirection:1},onClick:()=>turnPage(pageIndex+1,true)}),'right'),
+      button(locked?'解锁':'演出锁',{class:'performance-lock',ariaLabel:locked?'解锁演出界面':'锁定演出界面',onClick:toggleLock}),
       button('手动翻谱',{class:'live-flip-label',onClick:openSettings}),
       button('回到当前拍',{class:'follow-resume',onClick:()=>{held=false;onPosition(current);refreshUi();}}),
       el('span',{class:'live-countdown',role:'status','aria-live':'polite'}),
@@ -202,7 +212,7 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
   paper.addEventListener('touchstart',hold,{passive:true});
   return {
     renderControls, measure, onPosition, onBeat, openSettings,
-    reset() { held=false; pageIndex=0; current=null; clearPulse(); stopMotion(); refreshUi(); },
+    reset() { held=false; pageIndex=0; current=null; clearPulse(); stopMotion(); if(locked){locked=false;shell.classList.remove('performance-locked');} refreshUi(); },
     deactivate() { clearPulse(); stopMotion(); },
     playOptions() { return prefs.silent && isPresent() ? {track:'silent',metronome:false} : {track:player.getState().track==='silent'?'both':player.getState().track}; },
     turnPage(direction) { turnPage(pageIndex+direction,true); },

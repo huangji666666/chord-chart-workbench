@@ -26,11 +26,12 @@ export function createApp({root,store=createStore()}) {
   workspace.append(toolbar,paper);
   const shell=el('div',{class:'app qingpu single-workbench'},[top,banners,el('main',{class:'app__main'},[side,workspace]),playerEl,bottom]);root.replaceChildren(shell);
   let prefs=loadPrefs(),page='library',libraryView={filter:'all',search:'',sort:'recent'},importDraft='',drawer=null,lastStamp='',wakeLock=null,performanceView,writingSongId=null;
+  const importReferences=new Map();
   let playbackState={playing:false,paused:false,position:'',loop:false,metronome:false};
   const player=createPlayer({onPosition:highlight,onBeat:(beat)=>performanceView?.onBeat(beat),onState:(state)=>{playbackState=state;updatePlayer();if(!state.playing)performanceView?.deactivate();}});
   performanceView=createPerformance({shell,paper,player,getSong:()=>store.getSong(),isPresent:()=>page==='present',top});
   const report=(result)=>toast(result.message,{type:'error'});
-  const ctx={store,player,report,openAlignment:(sectionId,barIndex,selected)=>openAlignmentEditor(ctx,sectionId,barIndex,selected),selectBar:(sectionId,barIndex)=>selectBar(sectionId,barIndex),switchSong,newSong,copyCurrent:()=>{player.stop();store.duplicateSong();setMode('edit');},setMode,getPrefs:()=>({...prefs}),setPrefs,getLibraryView:()=>({...libraryView}),setLibraryView,getImportDraft:()=>importDraft,setImportDraft:(value)=>{importDraft=value;},print:printScore};
+  const ctx={store,player,report,openAlignment:(sectionId,barIndex,selected)=>openAlignmentEditor(ctx,sectionId,barIndex,selected),selectBar:(sectionId,barIndex)=>selectBar(sectionId,barIndex),switchSong,newSong,copyCurrent:()=>{player.stop();store.duplicateSong();setMode('edit');},setMode,getPrefs:()=>({...prefs}),setPrefs,getLibraryView:()=>({...libraryView}),setLibraryView,getImportDraft:()=>importDraft,setImportDraft:(value)=>{importDraft=value;},setImportReferences:(songId,images)=>{if(images?.length)importReferences.set(songId,images);},getImportReferences:(songId)=>importReferences.get(songId)??[],print:printScore};
 
   function setPrefs(next){prefs={...prefs,...next};savePrefs(prefs);applyTheme();render('prefs');}
   function applyTheme(){for(const [key,value]of Object.entries(getThemeColors(prefs.theme)))document.documentElement.style.setProperty(`--${key.replace(/[A-Z]/g,(c)=>'-'+c.toLowerCase())}`,value);document.documentElement.style.setProperty('--score-font',getFontStack(prefs.font));shell.dataset.theme=prefs.theme;}
@@ -108,6 +109,7 @@ export function createApp({root,store=createStore()}) {
     const header=chart.querySelector('.paper__header');
     if(mode==='edit'){header.classList.add('is-editable');header.setAttribute('role','button');header.tabIndex=0;header.setAttribute('aria-label','编辑歌曲信息');header.addEventListener('click',()=>openSongInfo(ctx));header.addEventListener('keydown',(event)=>{if(event.key==='Enter')openSongInfo(ctx);});}
     if(song.importIssues?.length)paper.append(button(`有 ${song.importIssues.length} 处信息待核对`,{class:'import-issue-button',onClick:openImportIssues}));
+    if(importReferences.has(song.id))paper.append(button(`查看原图参考（${importReferences.get(song.id).length} 张）`,{class:'import-reference-button',onClick:()=>openImportReferences(song.id)}));
     if(mode==='present')for(const bar of chart.querySelectorAll('[data-bar-id]'))bar.addEventListener('click',()=>{bar.scrollIntoView({block:'center',behavior:'smooth'});});
     Promise.all([waitForMelodies(chart),waitForChordDiagrams(chart)]).then(()=>{if(page==='present'&&paper.contains(chart))performanceView.measure();}).catch((error)=>toast(error.message,{type:'error'}));
     restoreFocus(paper,focus);
@@ -133,9 +135,27 @@ export function createApp({root,store=createStore()}) {
     });if(!result.ok)return report(result);
     const bar=store.getSong().sections.find((s)=>s.id===sectionId).bars[barIndex];openChordEditor(ctx,{sectionId,barIndex,eventIndex:bar.events.length-1});
   }
+  function openImportReferences(songId=store.getSong().id){
+    const images=importReferences.get(songId)??[];let handle;
+    handle=openSheet({title:'原图参考',subtitle:'导入时保留的本次会话图片',body:el('div',{class:'import-reference-gallery'},images.map((image,index)=>el('figure',{class:'import-reference-card'},[el('img',{src:image.url,alt:`原图参考 ${index+1}`,loading:'lazy'}),el('figcaption',{text:`第 ${index+1} 张 · ${image.name}`} )]))),actions:[button('关闭',{onClick:()=>handle.close(null)})]});
+  }
+
+  function issueBarTarget(location){
+    const match=String(location??'').match(/第\s*(\d+)\s*小节/);
+    if(!match)return null;
+    const number=Number(match[1]);
+    const song=store.getSong();
+    for(const section of song.sections)for(const [barIndex,bar] of section.bars.entries())if(bar.sourceNumber===number||(!bar.sourceNumber&&barIndex+1===number))return {sectionId:section.id,barIndex,bar};
+    return null;
+  }
+
   function openImportIssues(){
     const issues=store.getSong().importIssues??[];let handle;
-    handle=openSheet({title:'核对识谱结果',subtitle:'对照原图，检查这些位置',body:el('div',{class:'issue-review'},issues.map((i)=>el('div',{},[el('strong',{text:i.location}),el('p',{text:i.message})]))),actions:[button('稍后核对',{onClick:()=>handle.close(null)}),button('已核对完成',{variant:'primary',onClick:()=>{store.run('完成识谱核对',(s)=>({ok:true,value:{...s,importIssues:[],updatedAt:new Date().toISOString()}}));handle.close(null);}})]});
+    const body=el('div',{class:'issue-review'},issues.map((item)=>{
+      const target=issueBarTarget(item.location);
+      return button(`${item.location}：${item.message}${target?' · 定位':''}`,{class:`issue-review__item${target?' is-locatable':''}`,onClick:target?()=>{store.setSelection({sectionId:target.sectionId,barIndex:target.barIndex,eventIndex:null});setMode('edit');handle.close(null);setTimeout(()=>paper.querySelector(`[data-bar-id="${CSS.escape(target.bar.id)}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}),60)}:undefined,ariaLabel:target?`定位到${item.location}`:undefined});
+    }));
+    handle=openSheet({title:'核对识谱结果',subtitle:'点击带“定位”的问题跳到对应小节',body,actions:[button('稍后核对',{onClick:()=>handle.close(null)}),button('已核对完成',{variant:'primary',onClick:()=>{store.run('完成识谱核对',(s)=>({ok:true,value:{...s,importIssues:[],updatedAt:new Date().toISOString()}}));handle.close(null);}})]});
   }
 
   function renderBottom(){

@@ -22,8 +22,17 @@ export async function copyText(text) {
   toast('已复制', { type: 'success', duration: 1800 }); return true;
 }
 
+function readImageReference(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, url: String(reader.result) });
+    reader.onerror = () => reject(reader.error ?? new Error('原图读取失败'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function openImportSheet(ctx, options={}) {
-  let handle,result=null,closed=false,revision=0;
+  let handle,result=null,closed=false,revision=0,references=[];
   const initialSong=ctx.store.getSong();
   const nextNumber=(song)=>{const bars=song.sections.flatMap((s)=>s.bars);return (bars.at(-1)?.sourceNumber??bars.length)+1;};
   const destination=select({value:options.append?'append':'new',ariaLabel:'导入到哪里',options:[{value:'new',label:'生成一首新曲谱'},{value:'append',label:'追加到当前歌曲'}]});
@@ -31,11 +40,21 @@ export function openImportSheet(ctx, options={}) {
   const keepGoing=el('input',{type:'checkbox',checked:false,'aria-label':'导入后继续下一批'});
   const area=el('textarea',{class:'input import-text',rows:'9',placeholder:'粘贴一份或多份 AI 结果；可以把多个 JSON 代码块一起粘贴…','aria-label':'粘贴识谱结果',spellcheck:'false'});area.value=ctx.getImportDraft?.()??'';
   const status=el('div',{class:'import-preview','aria-live':'polite'});
+  const referencePreview=el('div',{class:'import-reference-preview','aria-live':'polite'});
   const targetName=el('p',{class:'field__hint'});
   const prompt=el('textarea',{class:'input import-text',rows:'9',readonly:true,'aria-label':'识谱提示词全文'});
   const promptText=()=>buildAIImportPrompt({title:destination.value==='append'?ctx.store.getSong().title:'',startBar:Number(start.value)||1});
   const refreshPrompt=()=>{prompt.value=promptText();targetName.textContent=destination.value==='append'?'接到「'+ctx.store.getSong().title+'」后面，当前应从第 '+nextNumber(ctx.store.getSong())+' 小节继续。':'连续编号会帮助检查多张图片是否重复或缺页。';};
   const invalidate=()=>{revision++;result=null;confirm.disabled=true;confirm.textContent=destination.value==='append'?'确认追加':'确认生成';check.textContent='检查并合并谱页';status.replaceChildren();ctx.setImportDraft?.(area.value);refreshPrompt();};
+  const renderReferencePreview=()=>{referencePreview.replaceChildren(...references.map((image,index)=>el('div',{class:'import-reference-thumb'},[el('img',{src:image.url,alt:`原图参考 ${index+1}`}),el('span',{text:String(index+1)})])));};
+  const chooseReferences=async()=>{
+    const files=await pickFiles({accept:'image/*',multiple:true});
+    if(!files.length)return;
+    const selected=files.filter((file)=>file.type.startsWith('image/')).slice(0,8);
+    if(!selected.length)return toast('请选择图片谱文件。',{type:'error'});
+    if(selected.reduce((sum,file)=>sum+file.size,0)>12*1024*1024)return toast('原图总大小不能超过 12 MB，请先裁剪或分批。',{type:'error'});
+    try{references=await Promise.all(selected.map(readImageReference));renderReferencePreview();toast(`已加入 ${references.length} 张原图参考`,{type:'success',duration:1800});}catch(error){toast(`原图读取失败：${error.message}`,{type:'error'});}
+  };
   const check=button('检查并合并谱页',{variant:'primary',onClick:async()=>{
     const source=area.value,stamp=revision,targetId=ctx.store.getSong().id;
     check.disabled=true;check.textContent='正在检查…';
@@ -60,9 +79,10 @@ export function openImportSheet(ctx, options={}) {
         if(result.targetId!==ctx.store.getSong().id)throw new Error('当前歌曲已变化，请重新检查。');
         const applied=ctx.store.run('追加 AI 谱页',(song)=>appendImportedSong(song,result.song,{numbered:result.numbered}));if(!applied.ok)throw new Error(applied.message);
       }else ctx.store.importSong(result.song);
+      ctx.setImportReferences?.(ctx.store.getSong().id,references);
     }catch(error){status.replaceChildren(el('p',{class:'field__error',text:error.message}));return;}
     area.value='';ctx.setImportDraft?.('');ctx.setMode('edit');toast('已保存「'+ctx.store.getSong().title+'」',{type:'success'});
-    if(keepGoing.checked){destination.value='append';start.value=String(nextNumber(ctx.store.getSong()));area.value='';invalidate();status.append(el('p',{class:'notice',text:'已保存。复制更新后的提示词，继续识别下一批谱页。'}));area.focus();}
+    if(keepGoing.checked){destination.value='append';start.value=String(nextNumber(ctx.store.getSong()));area.value='';references=[];renderReferencePreview();invalidate();status.append(el('p',{class:'notice',text:'已保存。复制更新后的提示词，继续识别下一批谱页。'}));area.focus();}
     else handle.close(null);
   }});
   destination.addEventListener('change',()=>{start.value=String(destination.value==='append'?nextNumber(ctx.store.getSong()):1);invalidate();});start.addEventListener('input',invalidate);area.addEventListener('input',invalidate);
@@ -70,7 +90,8 @@ export function openImportSheet(ctx, options={}) {
   handle=openSheet({title:'智能导入',subtitle:'多张谱图，按小节接成一首歌',body:el('div',{class:'import-panel'},[
     el('div',{class:'import-steps'},[el('div',{},[el('span',{class:'step-number',text:'1'}),el('strong',{text:'交给 AI 识谱'}),el('p',{text:'提示词和多张谱图一起发送'})]),el('div',{},[el('span',{class:'step-number',text:'2'}),el('strong',{text:'粘贴全部结果'}),el('p',{text:'一次粘贴多份，或分批追加'})]),el('div',{},[el('span',{class:'step-number',text:'3'}),el('strong',{text:'检查与校正'}),el('p',{text:'按小节合并，逐字修正位置'})])]),
     el('div',{class:'field-pair'},[field({label:'导入方式',control:destination}),field({label:'起始小节号（给 AI）',control:start})]),targetName,
-    withIcon(button('复制识谱提示词',{class:'copy-prompt',onClick:()=>copyText(promptText())}),'copy'),details('查看识谱提示词',prompt),area,status,
+    withIcon(button('复制识谱提示词',{class:'copy-prompt',onClick:()=>copyText(promptText())}),'copy'),details('查看识谱提示词',prompt),area,
+    el('div',{class:'import-reference-tools'},[button('添加原图参考',{variant:'quiet',onClick:chooseReferences}),el('span',{class:'field__hint',text:'可选：保存本次会话的原图，导入后用于对照校正。'}),referencePreview]),status,
     el('label',{class:'practice-choice'},[keepGoing,'保存后继续粘贴下一批']),
     el('div',{class:'import-secondary'},[withIcon(button('选择谱文文件',{variant:'quiet',onClick:async()=>{
       const files=await pickFiles({accept:'.json,.txt,.cho,.chordpro,.chopro,.abc',multiple:true});if(!files.length)return;

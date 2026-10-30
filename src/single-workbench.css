@@ -262,6 +262,29 @@
 .single-workbench .library-import { flex: 0 1 auto; }
 .single-workbench .library-manage { font-size: 13px; }
 .single-workbench .import-issue-button { display: block; margin: 16px 0 0; color: var(--warn); }
+.single-workbench .import-reference-button { display: block; margin: 8px 0 0; color: var(--accent-ink); }
+.import-reference-tools { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper-alt); }
+.import-reference-tools > .btn { justify-self: start; }
+.import-reference-preview { display: flex; gap: 8px; overflow-x: auto; min-height: 0; }
+.import-reference-thumb { position: relative; flex: 0 0 62px; height: 78px; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.import-reference-thumb img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.import-reference-thumb span { position: absolute; left: 4px; bottom: 3px; min-width: 18px; padding: 1px 4px; border-radius: 8px; background: rgba(0,0,0,.58); color: #fff; font-size: 10px; text-align: center; }
+.issue-review { display: grid; gap: 8px; }
+.issue-review__item { width: 100%; min-height: 44px; justify-content: flex-start; text-align: left; white-space: normal; line-height: 1.45; }
+.issue-review__item.is-locatable { color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft); }
+.import-reference-gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; max-height: 62vh; overflow: auto; }
+.import-reference-card { margin: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper-alt); }
+.import-reference-card img { display: block; width: 100%; max-height: 54vh; object-fit: contain; background: #fff; }
+.import-reference-card figcaption { padding: 7px 10px; color: var(--ink-soft); font-size: 12px; }
+
+/* 演出锁：锁住编辑入口，只保留翻页、播放和解锁按钮。 */
+.single-workbench.performance-locked .app__bar,
+.single-workbench.performance-locked .score-toolbar,
+.single-workbench.performance-locked .app__bottom,
+.single-workbench.performance-locked .paper { pointer-events: none; user-select: none; }
+.single-workbench.performance-locked .stage-controls { pointer-events: none; }
+.single-workbench.performance-locked .stage-controls .performance-lock { pointer-events: auto; }
+.single-workbench.performance-locked .performance-lock { background: var(--accent-soft); color: var(--accent-ink); }
 /* Shared dialogs are mounted outside the app shell. */
 .modal-backdrop { background: rgba(23, 34, 29, .3); backdrop-filter: blur(4px); }
 .modal { border: 1px solid var(--line); box-shadow: 0 12px 60px rgba(22, 33, 26, .13); max-height: 90dvh; }
