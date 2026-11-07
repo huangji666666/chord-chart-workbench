@@ -638,6 +638,19 @@ export function insertBar(song, sectionId, atIndex, bar) {
   return withSection(song, located.index, { ...section, bars });
 }
 
+/** 用一份已经解析并校验过的小节替换现有小节，供 AI 局部重识别使用。 */
+export function replaceBar(song, sectionId, barIndex, bar) {
+  const located = locateBar(song, sectionId, barIndex);
+  if (located.error) return located.error;
+  if (!bar || typeof bar !== 'object') return fail(EDIT_CODES.BAR_OUT_OF_RANGE, '替换小节的数据不完整。');
+  const replacement = cloneBarWithNewIds(bar);
+  if (replacement.sourceNumber === undefined) replacement.sourceNumber = located.bar.sourceNumber;
+  for (const prop of ['repeatStart', 'repeatEnd', 'ending']) {
+    if (replacement[prop] === undefined && located.bar[prop] !== undefined) replacement[prop] = located.bar[prop];
+  }
+  return withBar(song, located.sectionIndex, located.section, barIndex, replacement);
+}
+
 /**
  * 复制一个小节，插在它后面。新小节里的每个事件都会拿到新 ID。
  *

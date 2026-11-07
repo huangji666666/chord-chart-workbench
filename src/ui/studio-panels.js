@@ -35,17 +35,20 @@ export function openImportSheet(ctx, options={}) {
   let handle,result=null,closed=false,revision=0,references=[];
   const initialSong=ctx.store.getSong();
   const nextNumber=(song)=>{const bars=song.sections.flatMap((s)=>s.bars);return (bars.at(-1)?.sourceNumber??bars.length)+1;};
-  const destination=select({value:options.append?'append':'new',ariaLabel:'导入到哪里',options:[{value:'new',label:'生成一首新曲谱'},{value:'append',label:'追加到当前歌曲'}]});
-  const start=input({type:'number',min:1,max:100000,value:options.append?nextNumber(initialSong):1,ariaLabel:'本批起始小节号'});
+  const replaceTarget=options.replaceBar ?? null;
+  const destinationOptions=replaceTarget?[{value:'replace',label:`替换第 ${replaceTarget.number} 小节`}]:[{value:'new',label:'生成一首新曲谱'},{value:'append',label:'追加到当前歌曲'}];
+  const initialDestination=replaceTarget?'replace':options.append?'append':'new';
+  const destination=select({value:initialDestination,ariaLabel:'导入到哪里',options:destinationOptions});
+  const start=input({type:'number',min:1,max:100000,value:replaceTarget?.number??(options.append?nextNumber(initialSong):1),ariaLabel:'本批起始小节号',disabled:Boolean(replaceTarget)});
   const keepGoing=el('input',{type:'checkbox',checked:false,'aria-label':'导入后继续下一批'});
   const area=el('textarea',{class:'input import-text',rows:'9',placeholder:'粘贴一份或多份 AI 结果；可以把多个 JSON 代码块一起粘贴…','aria-label':'粘贴识谱结果',spellcheck:'false'});area.value=ctx.getImportDraft?.()??'';
   const status=el('div',{class:'import-preview','aria-live':'polite'});
   const referencePreview=el('div',{class:'import-reference-preview','aria-live':'polite'});
   const targetName=el('p',{class:'field__hint'});
   const prompt=el('textarea',{class:'input import-text',rows:'9',readonly:true,'aria-label':'识谱提示词全文'});
-  const promptText=()=>buildAIImportPrompt({title:destination.value==='append'?ctx.store.getSong().title:'',startBar:Number(start.value)||1});
-  const refreshPrompt=()=>{prompt.value=promptText();targetName.textContent=destination.value==='append'?'接到「'+ctx.store.getSong().title+'」后面，当前应从第 '+nextNumber(ctx.store.getSong())+' 小节继续。':'连续编号会帮助检查多张图片是否重复或缺页。';};
-  const invalidate=()=>{revision++;result=null;confirm.disabled=true;confirm.textContent=destination.value==='append'?'确认追加':'确认生成';check.textContent='检查并合并谱页';status.replaceChildren();ctx.setImportDraft?.(area.value);refreshPrompt();};
+  const promptText=()=>buildAIImportPrompt({title:destination.value==='append'||destination.value==='replace'?ctx.store.getSong().title:'',startBar:Number(start.value)||1});
+  const refreshPrompt=()=>{prompt.value=promptText();targetName.textContent=destination.value==='append'?'接到「'+ctx.store.getSong().title+'」后面，当前应从第 '+nextNumber(ctx.store.getSong())+' 小节继续。':destination.value==='replace'?`重新识别当前歌曲第 ${replaceTarget.number} 小节，只粘贴这一小节的结果。`:'连续编号会帮助检查多张图片是否重复或缺页。';};
+  const invalidate=()=>{revision++;result=null;confirm.disabled=true;confirm.textContent=destination.value==='append'?'确认追加':destination.value==='replace'?'确认替换':'确认生成';check.textContent=destination.value==='replace'?'检查并替换小节':'检查并合并谱页';status.replaceChildren();ctx.setImportDraft?.(area.value);refreshPrompt();};
   const renderReferencePreview=()=>{referencePreview.replaceChildren(...references.map((image,index)=>el('div',{class:'import-reference-thumb'},[el('img',{src:image.url,alt:`原图参考 ${index+1}`}),el('span',{text:String(index+1)})])));};
   const chooseReferences=async()=>{
     const files=await pickFiles({accept:'image/*',multiple:true});
@@ -55,7 +58,7 @@ export function openImportSheet(ctx, options={}) {
     if(selected.reduce((sum,file)=>sum+file.size,0)>12*1024*1024)return toast('原图总大小不能超过 12 MB，请先裁剪或分批。',{type:'error'});
     try{references=await Promise.all(selected.map(readImageReference));renderReferencePreview();toast(`已加入 ${references.length} 张原图参考`,{type:'success',duration:1800});}catch(error){toast(`原图读取失败：${error.message}`,{type:'error'});}
   };
-  const check=button('检查并合并谱页',{variant:'primary',onClick:async()=>{
+  const check=button(destination.value==='replace'?'检查并替换小节':'检查并合并谱页',{variant:'primary',onClick:async()=>{
     const source=area.value,stamp=revision,targetId=ctx.store.getSong().id;
     check.disabled=true;check.textContent='正在检查…';
     const parsed=await parseImportedSong(source,{existingSongIds:ctx.store.getLibrary().songs.map((s)=>s.id)});
@@ -66,23 +69,32 @@ export function openImportSheet(ctx, options={}) {
       const merged=appendImportedSong(ctx.store.getSong(),parsed.song,{numbered:parsed.numbered});
       if(!merged.ok){status.replaceChildren(el('p',{class:'field__error',text:merged.message}));check.textContent='重新检查';return;}
     }
+    if(destination.value==='replace'){
+      const bars=parsed.song.sections.flatMap((section)=>section.bars);
+      if(bars.length!==1){status.replaceChildren(el('p',{class:'field__error',text:'局部修复只能导入 1 个小节，请只粘贴目标小节的 AI 结果。'}));check.textContent='重新检查';return;}
+      if(parsed.numbered&&parsed.startBar!==replaceTarget.number){status.replaceChildren(el('p',{class:'field__error',text:`这份结果是第 ${parsed.startBar} 小节，当前要替换第 ${replaceTarget.number} 小节。`}));check.textContent='重新检查';return;}
+    }
     result={...parsed,readyText:source,targetId};
     const count=parsed.song.sections.reduce((sum,s)=>sum+s.bars.length,0);
     status.replaceChildren(el('strong',{text:parsed.song.title}),el('p',{text:`${parsed.parts} 份结果 · ${count} 小节${parsed.numbered?' · 第 '+parsed.startBar+'–'+parsed.endBar+' 小节':''}${melodyExists(parsed.song)?' · 含简谱及逐字对应':''}`}),...parsed.issues.slice(0,6).map((i)=>el('p',{class:'notice',text:i.location+'：'+i.message})));
-    check.textContent='重新检查';confirm.textContent=destination.value==='append'?'确认追加':'确认生成';confirm.disabled=false;
+    check.textContent=destination.value==='replace'?'重新检查并替换':'重新检查';confirm.textContent=destination.value==='append'?'确认追加':destination.value==='replace'?'确认替换':'确认生成';confirm.disabled=false;
   }});
-  const confirm=button(options.append?'确认追加':'确认生成',{variant:'primary',disabled:true,onClick:()=>{
+  const confirm=button(initialDestination==='append'?'确认追加':initialDestination==='replace'?'确认替换':'确认生成',{variant:'primary',disabled:true,onClick:()=>{
     if(!result?.ok||result.readyText!==area.value)return;
     if(ctx.store.hasPendingTextDraft())return toast('批量编辑还有未应用的谱文，请先保存后再导入。',{type:'error'});
     try{
       if(destination.value==='append'){
         if(result.targetId!==ctx.store.getSong().id)throw new Error('当前歌曲已变化，请重新检查。');
         const applied=ctx.store.run('追加 AI 谱页',(song)=>appendImportedSong(song,result.song,{numbered:result.numbered}));if(!applied.ok)throw new Error(applied.message);
+      }else if(destination.value==='replace'){
+        if(result.targetId!==ctx.store.getSong().id)throw new Error('当前歌曲已变化，请重新检查。');
+        const incoming=result.song.sections[0].bars[0];
+        const applied=ctx.store.run('替换 AI 小节',(song)=>edit.replaceBar(song,replaceTarget.sectionId,replaceTarget.barIndex,incoming));if(!applied.ok)throw new Error(applied.message);
       }else ctx.store.importSong(result.song);
       ctx.setImportReferences?.(ctx.store.getSong().id,references);
     }catch(error){status.replaceChildren(el('p',{class:'field__error',text:error.message}));return;}
     area.value='';ctx.setImportDraft?.('');ctx.setMode('edit');toast('已保存「'+ctx.store.getSong().title+'」',{type:'success'});
-    if(keepGoing.checked){destination.value='append';start.value=String(nextNumber(ctx.store.getSong()));area.value='';references=[];renderReferencePreview();invalidate();status.append(el('p',{class:'notice',text:'已保存。复制更新后的提示词，继续识别下一批谱页。'}));area.focus();}
+    if(keepGoing.checked&&destination.value!=='replace'){destination.value='append';start.value=String(nextNumber(ctx.store.getSong()));area.value='';references=[];renderReferencePreview();invalidate();status.append(el('p',{class:'notice',text:'已保存。复制更新后的提示词，继续识别下一批谱页。'}));area.focus();}
     else handle.close(null);
   }});
   destination.addEventListener('change',()=>{start.value=String(destination.value==='append'?nextNumber(ctx.store.getSong()):1);invalidate();});start.addEventListener('input',invalidate);area.addEventListener('input',invalidate);
@@ -92,7 +104,7 @@ export function openImportSheet(ctx, options={}) {
     el('div',{class:'field-pair'},[field({label:'导入方式',control:destination}),field({label:'起始小节号（给 AI）',control:start})]),targetName,
     withIcon(button('复制识谱提示词',{class:'copy-prompt',onClick:()=>copyText(promptText())}),'copy'),details('查看识谱提示词',prompt),area,
     el('div',{class:'import-reference-tools'},[button('添加原图参考',{variant:'quiet',onClick:chooseReferences}),el('span',{class:'field__hint',text:'可选：保存本次会话的原图，导入后用于对照校正。'}),referencePreview]),status,
-    el('label',{class:'practice-choice'},[keepGoing,'保存后继续粘贴下一批']),
+    destination.value!=='replace'?el('label',{class:'practice-choice'},[keepGoing,'保存后继续粘贴下一批']):null,
     el('div',{class:'import-secondary'},[withIcon(button('选择谱文文件',{variant:'quiet',onClick:async()=>{
       const files=await pickFiles({accept:'.json,.txt,.cho,.chordpro,.chopro,.abc',multiple:true});if(!files.length)return;
       if(files.reduce((sum,f)=>sum+f.size,0)>1500000)return toast('文件过大，请分批追加。',{type:'error'});

@@ -58,6 +58,7 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
     ui.querySelector('.live-page-count').textContent = (pageIndex + 1) + ' / ' + Math.max(1, pages.length);
     ui.querySelector('[data-page-direction="-1"]').disabled = pageIndex <= 0;
     ui.querySelector('[data-page-direction="1"]').disabled = pageIndex >= pages.length - 1;
+    ui.querySelector('.next-page-preview-button')?.toggleAttribute('disabled', pageIndex >= pages.length - 1);
     const resume = ui.querySelector('.follow-resume');
     resume.hidden = !held || prefs.flip === 'manual';
     const auto = ui.querySelector('.live-flip-label');
@@ -107,6 +108,21 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
     pageIndex = index;
     window.scrollTo({ top: Math.max(0, index === 0 ? 0 : page.top - inset()), behavior: 'smooth' });
     refreshUi();
+  }
+  function openNextPreview() {
+    const next = pages[pageIndex + 1];
+    if (!next) return toast('已经是最后一页。', { duration: 1600 });
+    const body = el('div', { class: 'next-page-preview' }, next.ids.map((id) => {
+      const bar = paper.querySelector('[data-bar-id="' + CSS.escape(id) + '"]');
+      return bar ? bar.cloneNode(true) : null;
+    }).filter(Boolean));
+    let handle;
+    handle = openSheet({
+      title: '下一页预览',
+      subtitle: '第 ' + (pageIndex + 2) + ' / ' + pages.length + ' 页',
+      body,
+      actions: [button('关闭', { onClick: () => handle.close(null) })],
+    });
   }
   function hold() {
     if (!isPresent() || prefs.flip === 'manual') return;
@@ -201,6 +217,7 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
       el('span',{class:'live-page-count',text:'1 / 1'}),
       withIcon(button('',{class:'icon-button',ariaLabel:'下一页',data:{pageDirection:1},onClick:()=>turnPage(pageIndex+1,true)}),'right'),
       button(locked?'解锁':'演出锁',{class:'performance-lock',ariaLabel:locked?'解锁演出界面':'锁定演出界面',onClick:toggleLock}),
+      button('下一页预览',{class:'next-page-preview-button',onClick:openNextPreview}),
       button('手动翻谱',{class:'live-flip-label',onClick:openSettings}),
       button('回到当前拍',{class:'follow-resume',onClick:()=>{held=false;onPosition(current);refreshUi();}}),
       el('span',{class:'live-countdown',role:'status','aria-live':'polite'}),

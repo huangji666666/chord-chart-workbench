@@ -20,6 +20,7 @@ import { openAlignmentEditor } from './alignment-editor.js';
 import { defaultAlignment, setBarAlignment, barNumber } from '../core/alignment.js';
 import { metaIsSet } from '../core/song.js';
 import { openChordDiagrams, waitForChordDiagrams } from './chord-diagrams.js';
+import { loadImportReferences, saveImportReferences } from './import-references.js';
 
 export function createApp({root,store=createStore()}) {
   const top=el('header',{class:'app__bar'}),banners=el('div',{class:'app__banners'}),side=el('aside',{class:'app__side','aria-label':'我的谱库'}),workspace=el('div',{class:'score-workspace'}),toolbar=el('div',{class:'score-toolbar'}),paper=el('div',{class:'app__paper'}),playerEl=el('div',{class:'player-dock'}),bottom=el('nav',{class:'app__bottom','aria-label':'常用操作'});
@@ -31,7 +32,7 @@ export function createApp({root,store=createStore()}) {
   const player=createPlayer({onPosition:highlight,onBeat:(beat)=>performanceView?.onBeat(beat),onState:(state)=>{playbackState=state;updatePlayer();if(!state.playing)performanceView?.deactivate();}});
   performanceView=createPerformance({shell,paper,player,getSong:()=>store.getSong(),isPresent:()=>page==='present',top});
   const report=(result)=>toast(result.message,{type:'error'});
-  const ctx={store,player,report,openAlignment:(sectionId,barIndex,selected)=>openAlignmentEditor(ctx,sectionId,barIndex,selected),selectBar:(sectionId,barIndex)=>selectBar(sectionId,barIndex),switchSong,newSong,copyCurrent:()=>{player.stop();store.duplicateSong();setMode('edit');},setMode,getPrefs:()=>({...prefs}),setPrefs,getLibraryView:()=>({...libraryView}),setLibraryView,getImportDraft:()=>importDraft,setImportDraft:(value)=>{importDraft=value;},setImportReferences:(songId,images)=>{if(images?.length)importReferences.set(songId,images);},getImportReferences:(songId)=>importReferences.get(songId)??[],print:printScore};
+  const ctx={store,player,report,openAlignment:(sectionId,barIndex,selected)=>openAlignmentEditor(ctx,sectionId,barIndex,selected),selectBar:(sectionId,barIndex)=>selectBar(sectionId,barIndex),switchSong,newSong,copyCurrent:()=>{player.stop();store.duplicateSong();setMode('edit');},setMode,getPrefs:()=>({...prefs}),setPrefs,getLibraryView:()=>({...libraryView}),setLibraryView,getImportDraft:()=>importDraft,setImportDraft:(value)=>{importDraft=value;},setImportReferences:(songId,images)=>{if(images?.length){importReferences.set(songId,images);saveImportReferences(songId,images);}},getImportReferences:(songId)=>importReferences.get(songId)??[],print:printScore};
 
   function setPrefs(next){prefs={...prefs,...next};savePrefs(prefs);applyTheme();render('prefs');}
   function applyTheme(){for(const [key,value]of Object.entries(getThemeColors(prefs.theme)))document.documentElement.style.setProperty(`--${key.replace(/[A-Z]/g,(c)=>'-'+c.toLowerCase())}`,value);document.documentElement.style.setProperty('--score-font',getFontStack(prefs.font));shell.dataset.theme=prefs.theme;}
@@ -49,8 +50,9 @@ export function createApp({root,store=createStore()}) {
     applyWakeLock();
     if(changed)window.scrollTo({top:0,behavior:'instant'});
   }
+  function hydrateReferences(songId){loadImportReferences(songId).then((images)=>{if(images.length&&!importReferences.has(songId)){importReferences.set(songId,images);render('references');}});}
   function switchSong(id){if(store.hasPendingTextDraft()){confirmDialog({title:'还有未应用的谱文',message:'切换前可以回到批量编辑保存这段谱文。',confirmText:'切换曲谱'}).then((confirmed)=>{if(confirmed)finishSwitch(id);});return;}finishSwitch(id);}
-  function finishSwitch(id){player.stop();store.switchSong(id);if(page==='library')setMode('present');if(drawer){drawer.handle.close(null);drawer=null;}window.scrollTo({top:0,behavior:'instant'});}
+  function finishSwitch(id){player.stop();store.switchSong(id);hydrateReferences(id);if(page==='library')setMode('present');if(drawer){drawer.handle.close(null);drawer=null;}window.scrollTo({top:0,behavior:'instant'});}
   function newSong(){player.stop();store.createSong();setMode('edit');if(drawer){drawer.handle.close(null);drawer=null;}}
   function openWriting(){
     if(page==='library'){
@@ -149,12 +151,26 @@ export function createApp({root,store=createStore()}) {
     return null;
   }
 
+  function issueCategory(item){
+    const text=`${item.location??''} ${item.message??''}`;
+    if(text.includes('自动修正'))return 'repair';
+    if(/拍数|节奏|时值|拍号/.test(text))return 'rhythm';
+    if(/歌词|字|音符|简谱|对应/.test(text))return 'alignment';
+    if(/小节|编号|重复|缺号/.test(text))return 'structure';
+    return 'review';
+  }
+
   function openImportIssues(){
     const issues=store.getSong().importIssues??[];let handle;
-    const body=el('div',{class:'issue-review'},issues.map((item)=>{
+    const filter=select({value:'all',ariaLabel:'问题分类',options:[{value:'all',label:`全部（${issues.length}）`},{value:'repair',label:'自动修正'},{value:'rhythm',label:'节奏 / 时值'},{value:'alignment',label:'歌词 / 简谱'},{value:'structure',label:'小节 / 结构'},{value:'review',label:'其他待核对'}]});
+    const list=el('div',{class:'issue-review'});
+    const renderList=()=>{const value=filter.value;list.replaceChildren(...issues.filter((item)=>value==='all'||issueCategory(item)===value).map((item)=>{
       const target=issueBarTarget(item.location);
-      return button(`${item.location}：${item.message}${target?' · 定位':''}`,{class:`issue-review__item${target?' is-locatable':''}`,onClick:target?()=>{store.setSelection({sectionId:target.sectionId,barIndex:target.barIndex,eventIndex:null});setMode('edit');handle.close(null);setTimeout(()=>paper.querySelector(`[data-bar-id="${CSS.escape(target.bar.id)}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}),60)}:undefined,ariaLabel:target?`定位到${item.location}`:undefined});
-    }));
+      const locate=button(`${item.location}：${item.message}${target?' · 定位':''}`,{class:`issue-review__item${target?' is-locatable':''}`,onClick:target?()=>{store.setSelection({sectionId:target.sectionId,barIndex:target.barIndex,eventIndex:null});setMode('edit');handle.close(null);setTimeout(()=>paper.querySelector(`[data-bar-id="${CSS.escape(target.bar.id)}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}),60)}:undefined,ariaLabel:target?`定位到${item.location}`:undefined});
+      return target?el('div',{class:'issue-review__row'},[locate,button('重新识别',{variant:'quiet',onClick:()=>{handle.close(null);openImportSheet(ctx,{replaceBar:{sectionId:target.sectionId,barIndex:target.barIndex,number:target.bar.sourceNumber??target.barIndex+1}});}})]):locate;
+    }));};
+    filter.addEventListener('change',renderList);renderList();
+    const body=el('div',{class:'issue-review-shell'},[el('label',{class:'issue-filter'},[el('span',{text:'筛选问题'}),filter]),list]);
     handle=openSheet({title:'核对识谱结果',subtitle:'点击带“定位”的问题跳到对应小节',body,actions:[button('稍后核对',{onClick:()=>handle.close(null)}),button('已核对完成',{variant:'primary',onClick:()=>{store.run('完成识谱核对',(s)=>({ok:true,value:{...s,importIssues:[],updatedAt:new Date().toISOString()}}));handle.close(null);}})]});
   }
 
@@ -227,12 +243,12 @@ export function createApp({root,store=createStore()}) {
   async function applyWakeLock(){try{if(page==='present'&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}else if(page!=='present'&&wakeLock){await wakeLock.release();wakeLock=null;}}catch{wakeLock=null;}}
   async function printScore(){const previous=page;setMode('preview');try{await document.fonts.ready;await Promise.all([waitForMelodies(paper),waitForChordDiagrams(paper)]);window.addEventListener('afterprint',()=>setMode(previous),{once:true});window.print();}catch(error){setMode(previous);toast(error.message,{type:'error'});}}
 
-  document.addEventListener('keydown',(event)=>{const field=event.target.closest?.('input,textarea,select,[contenteditable]');if(field||document.querySelector('.modal-backdrop'))return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?redo():undo();}else if(page==='present'&&['ArrowRight','ArrowDown'].includes(event.key)){event.preventDefault();event.shiftKey?nextSong(1):performanceView.turnPage(1);}else if(page==='present'&&['ArrowLeft','ArrowUp'].includes(event.key)){event.preventDefault();event.shiftKey?nextSong(-1):performanceView.turnPage(-1);}else if(page==='present'&&event.key==='Escape')setMode('edit');});
+  document.addEventListener('keydown',(event)=>{const field=event.target.closest?.('input,textarea,select,[contenteditable]');if(field||document.querySelector('.modal-backdrop'))return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?redo():undo();}else if(page==='present'&&['ArrowRight','ArrowDown','PageDown',' '].includes(event.key)){event.preventDefault();event.shiftKey?nextSong(1):performanceView.turnPage(1);}else if(page==='present'&&['ArrowLeft','ArrowUp','PageUp'].includes(event.key)){event.preventDefault();event.shiftKey?nextSong(-1):performanceView.turnPage(-1);}else if(page==='present'&&event.key==='Escape')setMode('edit');});
   window.addEventListener('beforeunload',()=>store.flushSave());
   document.addEventListener('visibilitychange',()=>{if(document.hidden){player.pause();stopScrolling();}else applyWakeLock();});
   let resize;window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(()=>render('resize'),120);});
   store.subscribe(render);
-  applyTheme();render('init');
+  applyTheme();render('init');hydrateReferences(store.getSong().id);
   window.__chordChart={store,getSong:()=>store.getSong(),summarize:()=>({title:store.getSong().title,sections:store.getSong().sections.length,bars:store.getSong().sections.reduce((n,s)=>n+s.bars.length,0)}),collectDurationIssues:()=>collectDurationIssues(store.getSong()),buildScorePages:()=>buildScorePages(store.getSong()),player,version:2};
   return {store,render};
 }

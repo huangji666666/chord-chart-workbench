@@ -30,6 +30,7 @@ import {
   removeBar,
   removeEvent,
   removeSection,
+  replaceBar,
   renameSection,
   setBarEmpty,
   setEventBass,
@@ -507,6 +508,28 @@ test('insertBar 拒绝越界插入位置', () => {
   const introId = sectionNamed(song, 'Intro').id;
   assertFails(insertBar(song, introId, 3), EDIT_CODES.BAR_OUT_OF_RANGE);
   assertFails(insertBar(song, introId, -1), EDIT_CODES.BAR_OUT_OF_RANGE);
+});
+
+test('replaceBar 局部替换时保留原编号并为新内容换 ID', () => {
+  const song = chartFixture();
+  const intro = sectionNamed(song, 'Intro');
+  const original = intro.bars[0];
+  original.sourceNumber = 7;
+  original.repeatStart = true;
+  const replacement = {
+    type: 'chords',
+    events: [{ kind: 'chord', beats: 4, chord: { root: 'F', quality: 'maj7' } }],
+  };
+
+  const result = replaceBar(song, intro.id, 0, replacement);
+  assert.equal(result.ok, true);
+  const next = result.value.sections[0].bars[0];
+  assert.equal(next.sourceNumber, 7);
+  assert.equal(next.repeatStart, true);
+  assert.notEqual(next.id, original.id);
+  assert.notEqual(next.events[0].id, original.events[0].id);
+  assert.equal(original.events.length, 2, '局部替换不得原地修改旧歌曲');
+  assertValidSong(result.value);
 });
 
 test('duplicateBar 复制到下一格并全换 ID', () => {
