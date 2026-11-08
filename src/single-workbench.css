@@ -295,6 +295,9 @@
 .single-workbench.performance-locked .performance-lock { background: var(--accent-soft); color: var(--accent-ink); }
 .next-page-preview { display: grid; gap: 10px; max-height: 65vh; overflow: auto; padding: 2px; }
 .next-page-preview .bar { pointer-events: none; }
+.tap-tempo-control { display: grid; grid-template-columns: minmax(88px, 1fr) auto; gap: 8px; align-items: center; }
+.tap-tempo-control .tap-tempo-hint { grid-column: 1 / -1; color: var(--ink-soft); font-size: 12px; }
+.tap-tempo-button { white-space: nowrap; }
 /* Shared dialogs are mounted outside the app shell. */
 .modal-backdrop { background: rgba(23, 34, 29, .3); backdrop-filter: blur(4px); }
 .modal { border: 1px solid var(--line); box-shadow: 0 12px 60px rgba(22, 33, 26, .13); max-height: 90dvh; }

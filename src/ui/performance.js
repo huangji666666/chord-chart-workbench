@@ -34,7 +34,18 @@ export function paginateRows(rows, height, start = 0) {
   return pages;
 }
 
-export function createPerformance({ shell, paper, player, getSong, isPresent, top }) {
+/** Convert recent tap timestamps into a usable integer BPM. */
+export function tapTempoBpm(taps) {
+  const values = (Array.isArray(taps) ? taps : []).filter((value) => Number.isFinite(value));
+  if (values.length < 2) return null;
+  const first = values[0];
+  const last = values.at(-1);
+  const interval = (last - first) / (values.length - 1);
+  if (!Number.isFinite(interval) || interval <= 0) return null;
+  return Math.max(30, Math.min(300, Math.round(60000 / interval)));
+}
+
+export function createPerformance({ shell, paper, player, getSong, isPresent, top, setTempo = () => true }) {
   let prefs;
   try { prefs = normalizePerformancePrefs(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
   catch { prefs = normalizePerformancePrefs(); }
@@ -189,6 +200,19 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
     const visual = el('input', { type: 'checkbox', checked: prefs.visual, 'aria-label': '开启视觉节拍' });
     const silent = el('input', { type: 'checkbox', checked: prefs.silent, 'aria-label': '静音视觉节拍' });
     const practice = el('input', { type: 'checkbox', checked: prefs.practice, 'aria-label': '使用练习节奏翻谱' });
+    const bpm = input({ type: 'number', min: 30, max: 300, step: 1, value: getSong().bpm, ariaLabel: '现场速度 BPM' });
+    const tapHint = el('span', { class: 'tap-tempo-hint', text: '连续点按两次以上，自动取平均速度' });
+    const tap = button('点按定速', { class: 'tap-tempo-button', onClick: () => {
+      const now = performance.now();
+      if (tap.dataset.last && now - Number(tap.dataset.last) > 2200) tap.dataset.taps = '';
+      const taps = (tap.dataset.taps ? tap.dataset.taps.split(',').map(Number) : []).filter(Number.isFinite);
+      taps.push(now);
+      tap.dataset.taps = taps.slice(-6).join(',');
+      tap.dataset.last = String(now);
+      const value = tapTempoBpm(taps.slice(-6));
+      if (value) { bpm.value = String(value); tapHint.textContent = `当前 ${value} BPM · 继续点按可微调`; }
+      else tapHint.textContent = '再点一下，开始计算平均速度';
+    } });
     const range = select({ value: prefs.range, ariaLabel: '视觉节拍范围', options: [
       {value:'dots',label:'灯点'}, {value:'edge',label:'屏幕边缘'}, {value:'row',label:'当前小节'}, {value:'screen',label:'全屏背景'},
     ]});
@@ -201,12 +225,16 @@ export function createPerformance({ shell, paper, player, getSong, isPresent, to
     let handle;
     handle = openSheet({title:'演出设置',subtitle:'节拍提示与翻谱',body:el('div',{class:'compact-form'},[
       el('div',{class:'playback-switches'},[el('label',{},[visual,'视觉节拍']),el('label',{},[silent,'静音'])]),
+      field({label:'现场速度 / BPM',control:el('div',{class:'tap-tempo-control'},[bpm,tap,tapHint])}),
       field({label:'提示范围',control:range}),field({label:'强度',control:el('div',{class:'strength-control'},[strength,amount])}),
       field({label:'提示颜色',control:color}),field({label:'翻谱方式',control:flip}),field({label:'翻页倒数',control:count}),
       getSong().timing==='practice'?el('label',{class:'practice-choice'},[practice,'使用练习节奏翻谱']):null,
       getSong().timing==='practice'?el('p',{class:'notice',text:'这首谱子的节奏为练习估算，自动翻谱将按当前拍数推进。'}):null,
     ]),actions:[button('取消',{onClick:()=>handle.close(null)}),button('完成',{variant:'primary',onClick:()=>{
       prefs=normalizePerformancePrefs({visual:visual.checked,range:range.value,strength:Number(strength.value)/100,color:color.value,flip:flip.value,countdown:Number(count.value),silent:silent.checked,practice:practice.checked});
+      const tempo = Number(bpm.value);
+      if (!Number.isInteger(tempo) || tempo < 30 || tempo > 300) { toast('现场速度需要是 30–300 之间的整数。',{type:'error'}); return; }
+      if (setTempo(tempo) === false) return;
       try { localStorage.setItem(STORAGE_KEY,JSON.stringify(prefs)); } catch { toast('演出设置本次生效，设备未能保存。',{type:'warn'}); }
       player.stop(); held=false; clearPulse(); refreshUi(); handle.close(null);
     }})]});

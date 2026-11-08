@@ -30,7 +30,7 @@ export function createApp({root,store=createStore()}) {
   const importReferences=new Map();
   let playbackState={playing:false,paused:false,position:'',loop:false,metronome:false};
   const player=createPlayer({onPosition:highlight,onBeat:(beat)=>performanceView?.onBeat(beat),onState:(state)=>{playbackState=state;updatePlayer();if(!state.playing)performanceView?.deactivate();}});
-  performanceView=createPerformance({shell,paper,player,getSong:()=>store.getSong(),isPresent:()=>page==='present',top});
+  performanceView=createPerformance({shell,paper,player,getSong:()=>store.getSong(),isPresent:()=>page==='present',top,setTempo:(bpm)=>{const result=store.run('调整演出速度',(song)=>edit.updateSongMeta(song,{bpm}));if(!result.ok){report(result);return false;}return true;}});
   const report=(result)=>toast(result.message,{type:'error'});
   const ctx={store,player,report,openAlignment:(sectionId,barIndex,selected)=>openAlignmentEditor(ctx,sectionId,barIndex,selected),selectBar:(sectionId,barIndex)=>selectBar(sectionId,barIndex),switchSong,newSong,copyCurrent:()=>{player.stop();store.duplicateSong();setMode('edit');},setMode,getPrefs:()=>({...prefs}),setPrefs,getLibraryView:()=>({...libraryView}),setLibraryView,getImportDraft:()=>importDraft,setImportDraft:(value)=>{importDraft=value;},setImportReferences:(songId,images)=>{if(images?.length){importReferences.set(songId,images);saveImportReferences(songId,images);}},getImportReferences:(songId)=>importReferences.get(songId)??[],print:printScore};
 

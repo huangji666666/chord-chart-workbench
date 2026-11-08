@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildTimeline, buildBeatTimeline } from '../src/ui/player.js';
-import { normalizePerformancePrefs, paginateRows } from '../src/ui/performance.js';
+import { normalizePerformancePrefs, paginateRows, tapTempoBpm } from '../src/ui/performance.js';
 import { createSong } from '../src/core/song.js';
 
 test('弱起与重复段的视觉强拍回到小节开头，6/8 每小节六个拍点', () => {
@@ -39,4 +39,12 @@ test('坏的演出偏好回到可用设置，颜色和强度受到限制', () =>
   assert.equal(prefs.flip,'manual');
   assert.equal(prefs.countdown,3);
   assert.deepEqual(normalizePerformancePrefs({silent:true,flip:'follow'}).silent,true);
+});
+
+test('点按定速取最近节拍平均值并限制在可用范围', () => {
+  assert.equal(tapTempoBpm([0]), null);
+  assert.equal(tapTempoBpm([0, 500, 1000, 1500]), 120);
+  assert.equal(tapTempoBpm([0, 100]), 300, '过快点按不超过 300 BPM');
+  assert.equal(tapTempoBpm([0, 4000]), 30, '过慢点按不低于 30 BPM');
+  assert.equal(tapTempoBpm([10, 10]), null, '重复时间戳不能制造速度');
 });
